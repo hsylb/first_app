@@ -786,6 +786,7 @@
       stroke: #536b8c;
       stroke-dasharray: 4 4;
       stroke-width: 1.3;
+      pointer-events: none;
     }
 
     .plot-dot-blue {
@@ -1232,7 +1233,7 @@
     </div>
     <div class="topbar-right">
       <span class="screening-tag">Preliminary screening only</span>
-      <span class="draft-tag">Stage 4 · deflection and checks</span>
+      <span class="draft-tag">Stage 5 · diagram inspection</span>
     </div>
   </header>
 
@@ -1251,7 +1252,7 @@
         <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10 9v4M10 6.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
-      <span><strong>Stage 4 results are calculated.</strong> Reactions, shear, moment, deflection, section checks, and recommendation update from valid loads. Diagram inspection remains pending.</span>
+      <span><strong>Stage 5 analysis is interactive.</strong> Hover over any diagram to inspect shear, moment, and deflection at the same beam position.</span>
     </div>
 
     <div class="workspace">
@@ -1383,8 +1384,8 @@
 
       <section class="results" aria-label="Beam results">
         <div class="results-notice" role="note">
-          <span class="plot-tag">Stage 4 calculations</span>
-          <span>Reactions, shear, moment, deflection, section checks, and recommendation update from valid loads. Diagram inspection remains pending.</span>
+          <span class="plot-tag">Stage 5 interactions</span>
+          <span>Results update from valid loads; moving over any diagram shows values at a shared beam position.</span>
         </div>
         <section class="card beam-card" aria-labelledby="beam-view-heading">
           <div class="card-heading">
@@ -1430,6 +1431,7 @@
             <g id="shear-grid"></g>
             <path id="shear-fill" class="plot-fill-blue"></path>
             <path id="shear-curve" class="plot-line-blue"></path>
+            <line id="shear-crosshair" x1="120" y1="24" x2="120" y2="148" class="crosshair" aria-hidden="true" visibility="hidden"/>
             <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
             <g id="shear-labels"></g>
           </svg>
@@ -1449,6 +1451,7 @@
             <g id="moment-grid"></g>
             <path id="moment-fill" class="plot-fill-teal"></path>
             <path id="moment-curve" class="plot-line-teal"></path>
+            <line id="moment-crosshair" x1="120" y1="24" x2="120" y2="148" class="crosshair" aria-hidden="true" visibility="hidden"/>
             <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
             <g id="moment-labels"></g>
           </svg>
@@ -1473,10 +1476,17 @@
               <g id="deflection-grid"></g>
               <path id="deflection-fill" class="plot-fill-indigo" clip-path="url(#deflection-plot-clip)"></path>
               <path id="deflection-curve" class="plot-line-indigo" clip-path="url(#deflection-plot-clip)"></path>
+              <line id="deflection-crosshair" x1="120" y1="24" x2="120" y2="148" class="crosshair" aria-hidden="true" visibility="hidden"/>
               <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
               <g id="deflection-labels"></g>
           </svg>
           <div class="axis-foot" id="deflection-axis"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+          <div class="crosshair-note" id="diagram-readout" aria-label="Diagram inspection values">
+            <span id="inspection-x">Hover over any diagram</span>
+            <span id="inspection-shear">V = — kips</span>
+            <span id="inspection-moment">M = — kip-ft</span>
+            <span id="inspection-deflection">y = — in</span>
+          </div>
         </section>
 
         <div class="bottom-grid">
@@ -1488,7 +1498,7 @@
             <div class="check-list">
               <article class="check-item" id="bending-check" title="Bending stress fb = maximum absolute moment × 12 / section modulus Sx. Passes when fb ≤ allowable Fb.">
                 <div class="check-top">
-                  <span class="check-title">Bending <span class="info" aria-label="Formula: maximum absolute moment times 12 divided by Sx">i</span></span>
+                  <span class="check-title">Bending <span class="info" title="Bending stress fb = maximum absolute moment × 12 / section modulus Sx; pass when fb ≤ Fb." aria-label="Formula: maximum absolute moment times 12 divided by Sx">i</span></span>
                   <span class="status pass" id="bending-status">PASS</span>
                 </div>
                 <div class="check-values">
@@ -1500,7 +1510,7 @@
               </article>
               <article class="check-item" id="deflection-check" title="Deflection check compares maximum absolute deflection with the selected span limit.">
                 <div class="check-top">
-                  <span class="check-title">Deflection <span class="info" aria-label="Formula: maximum absolute deflection compared with L divided by 360">i</span></span>
+                  <span class="check-title">Deflection <span class="info" title="Maximum absolute deflection divided by the allowable span ratio." aria-label="Formula: maximum absolute deflection compared with L divided by 360">i</span></span>
                   <span class="status pass" id="deflection-status">PASS</span>
                 </div>
                 <div class="check-values">
@@ -1556,6 +1566,8 @@
         pointLoads: [],
         uniformLoads: [{ id: 1, magnitude: 1, start: 0, end: 20, valid: true }]
       };
+      let currentAnalysis = null;
+      let currentSectionResults = null;
       let nextLoadId = 2;
       let draggingPointId = null;
       let dragPointerOffset = 0;
@@ -1624,6 +1636,7 @@
         otherMaterial: document.getElementById("other-material-reference"),
         shearStat: document.getElementById("shear-stat"),
         shearSvg: document.getElementById("shear-svg"),
+        shearCrosshair: document.getElementById("shear-crosshair"),
         shearGrid: document.getElementById("shear-grid"),
         shearFill: document.getElementById("shear-fill"),
         shearCurve: document.getElementById("shear-curve"),
@@ -1632,6 +1645,7 @@
         shearTag: document.getElementById("shear-tag"),
         momentStat: document.getElementById("moment-stat"),
         momentSvg: document.getElementById("moment-svg"),
+        momentCrosshair: document.getElementById("moment-crosshair"),
         momentGrid: document.getElementById("moment-grid"),
         momentFill: document.getElementById("moment-fill"),
         momentCurve: document.getElementById("moment-curve"),
@@ -1642,6 +1656,7 @@
         deflectionTag: document.getElementById("deflection-tag"),
         deflectionStat: document.getElementById("deflection-stat"),
         deflectionSvg: document.getElementById("deflection-svg"),
+        deflectionCrosshair: document.getElementById("deflection-crosshair"),
         deflectionGrid: document.getElementById("deflection-grid"),
         deflectionFill: document.getElementById("deflection-fill"),
         deflectionCurve: document.getElementById("deflection-curve"),
@@ -1666,8 +1681,18 @@
         recommendStatus: document.getElementById("recommend-status"),
         recommendStatusIcon: document.getElementById("recommend-status-icon"),
         recommendStatusText: document.getElementById("recommend-status-text"),
-        recommendButton: document.getElementById("recommend-button")
+        recommendButton: document.getElementById("recommend-button"),
+        inspectionX: document.getElementById("inspection-x"),
+        inspectionShear: document.getElementById("inspection-shear"),
+        inspectionMoment: document.getElementById("inspection-moment"),
+        inspectionDeflection: document.getElementById("inspection-deflection")
       };
+      const analysisDiagrams = [elements.shearSvg, elements.momentSvg, elements.deflectionSvg];
+      const diagramCrosshairs = [
+        elements.shearCrosshair,
+        elements.momentCrosshair,
+        elements.deflectionCrosshair
+      ];
 
       function formatNumber(value, decimals = 2) {
         return Number(value.toFixed(decimals)).toString();
@@ -2044,7 +2069,7 @@
           position,
           value: deflectionAt(position)
         }));
-        return { extrema, samples };
+        return { extrema, samples, valueAt: deflectionAt };
       }
 
       function evaluateSection(analysis, section, material) {
@@ -2276,9 +2301,17 @@
           "in",
           deflection.passes
         );
-        elements.deflectionCheck.title =
-          `Deflection check compares maximum absolute deflection with L/${state.deflectionLimit}. Passes when actual is less than or equal to allowable.`;
-        elements.deflectionCheck.querySelector(".info").setAttribute(
+        const bendingFormula =
+          "Bending stress fb = maximum absolute moment × 12 / section modulus Sx; pass when fb ≤ Fb.";
+        elements.bendingCheck.title = bendingFormula;
+        const bendingInfo = elements.bendingCheck.querySelector(".info");
+        bendingInfo.title = bendingFormula;
+        const deflectionFormula =
+          `Maximum absolute deflection compared with L/${state.deflectionLimit}; pass when actual is less than or equal to allowable.`;
+        elements.deflectionCheck.title = deflectionFormula;
+        const deflectionInfo = elements.deflectionCheck.querySelector(".info");
+        deflectionInfo.title = deflectionFormula;
+        deflectionInfo.setAttribute(
           "aria-label",
           `Formula: maximum absolute deflection compared with L divided by ${state.deflectionLimit}`
         );
@@ -2295,8 +2328,8 @@
         elements.recommendName.hidden = !recommendation;
         elements.recommendDetail.hidden = !recommendation;
         elements.recommendButton.hidden = !recommendation;
-        elements.recommendButton.disabled = true;
-        elements.recommendButton.setAttribute("aria-disabled", "true");
+        elements.recommendButton.disabled = !recommendation;
+        elements.recommendButton.setAttribute("aria-disabled", String(!recommendation));
 
         if (!recommendation) {
           elements.recommendName.textContent = "";
@@ -2575,6 +2608,9 @@
       function renderBeam() {
         const analysis = calculateBeamResponse();
         const sectionResults = calculateStage4Results(analysis);
+        currentAnalysis = analysis;
+        currentSectionResults = sectionResults;
+        hideDiagramCrosshairs();
         const layout = getBeamLayout();
         elements.beamSvg.setAttribute("viewBox", `0 0 900 ${layout.viewHeight}`);
         elements.beamElements.replaceChildren();
@@ -2907,10 +2943,46 @@
         return Math.max(0, Math.min(state.span, snapped));
       }
 
-      function beamPositionFromClientX(clientX) {
-        const bounds = elements.beamSvg.getBoundingClientRect();
+      function beamPositionFromSvgClientX(svg, clientX) {
+        const bounds = svg.getBoundingClientRect();
+        if (bounds.width === 0) return 0;
         const viewX = ((clientX - bounds.left) / bounds.width) * 900;
-        return ((viewX - beamStart) / beamWidth) * state.span;
+        const position = ((viewX - beamStart) / beamWidth) * state.span;
+        return Math.max(0, Math.min(state.span, position));
+      }
+
+      function beamPositionFromClientX(clientX) {
+        return beamPositionFromSvgClientX(elements.beamSvg, clientX);
+      }
+
+      function hideDiagramCrosshairs() {
+        for (const crosshair of diagramCrosshairs) {
+          crosshair.setAttribute("visibility", "hidden");
+        }
+        elements.inspectionX.textContent = "Hover over any diagram";
+        elements.inspectionShear.textContent = "V = — kips";
+        elements.inspectionMoment.textContent = "M = — kip-ft";
+        elements.inspectionDeflection.textContent = "y = — in";
+      }
+
+      function showDiagramInspection(svg, clientX) {
+        if (!currentAnalysis || !currentSectionResults) return;
+        const position = beamPositionFromSvgClientX(svg, clientX);
+        const x = beamStart + beamWidth * position / currentAnalysis.span;
+        for (const crosshair of diagramCrosshairs) {
+          crosshair.setAttribute("x1", x.toFixed(3));
+          crosshair.setAttribute("x2", x.toFixed(3));
+          crosshair.setAttribute("visibility", "visible");
+        }
+
+        const shearSide = position >= currentAnalysis.span - analysisEpsilon ? "left" : "right";
+        const shear = calculateShearAt(currentAnalysis, position, shearSide);
+        const moment = calculateMomentAt(currentAnalysis, position);
+        const deflection = currentSectionResults.selected.deflection.response.valueAt(position);
+        elements.inspectionX.innerHTML = `x = <strong>${formatNumber(position, 2)} ft</strong>`;
+        elements.inspectionShear.textContent = `V = ${formatSignedValue(shear)} kips`;
+        elements.inspectionMoment.textContent = `M = ${formatSignedValue(moment)} kip-ft`;
+        elements.inspectionDeflection.textContent = `y = ${formatSignedValue(deflection)} in`;
       }
 
       elements.spanRange.addEventListener("input", () => {
@@ -2966,6 +3038,22 @@
       });
       elements.addPoint.addEventListener("click", addPointLoad);
       elements.addUniform.addEventListener("click", addUniformLoad);
+
+      for (const diagram of analysisDiagrams) {
+        diagram.addEventListener("pointermove", event => {
+          showDiagramInspection(diagram, event.clientX);
+        });
+        diagram.addEventListener("pointerleave", hideDiagramCrosshairs);
+      }
+
+      elements.recommendButton.addEventListener("click", () => {
+        const recommendation = currentSectionResults?.recommendation;
+        if (!recommendation) return;
+        state.section = recommendation.section.name;
+        elements.section.value = state.section;
+        updateMaterialProperties();
+        renderBeam();
+      });
 
       elements.beamSvg.addEventListener("pointerdown", event => {
         const target = event.target.closest("[data-point-load-id]");
