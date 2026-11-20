@@ -1260,7 +1260,7 @@
         <section class="card setup-card">
           <div class="card-heading">
             <h2>Beam setup</h2>
-            <span class="example-tag">Interactive</span>
+            <button class="secondary-button" id="reset-default" type="button">Reset to Default</button>
           </div>
 
           <div class="form-section">
@@ -1614,6 +1614,7 @@
         uniformCount: document.getElementById("uniform-load-count"),
         addPoint: document.getElementById("add-point-load"),
         addUniform: document.getElementById("add-uniform-load"),
+        resetDefault: document.getElementById("reset-default"),
         beamSvg: document.getElementById("beam-svg"),
         beamElements: document.getElementById("beam-elements"),
         beamTitle: document.getElementById("beam-title"),
@@ -2938,6 +2939,25 @@
         renderBeam();
       }
 
+      function resetToDefault() {
+        state.support = "simple";
+        state.material = "steel";
+        state.section = "W12x26";
+        state.deflectionLimit = 360;
+        state.pointLoads = [];
+        state.uniformLoads = [
+          { id: 1, magnitude: 1, start: 0, end: 20, valid: true }
+        ];
+        nextLoadId = 2;
+
+        elements.support.value = state.support;
+        elements.material.value = state.material;
+        elements.deflectionLimit.value = String(state.deflectionLimit);
+        populateSections();
+        renderLoadLists();
+        setSpan(20);
+      }
+
       function snapPointPosition(position) {
         const snapped = Math.round(position * 4) / 4;
         return Math.max(0, Math.min(state.span, snapped));
@@ -3038,6 +3058,7 @@
       });
       elements.addPoint.addEventListener("click", addPointLoad);
       elements.addUniform.addEventListener("click", addUniformLoad);
+      elements.resetDefault.addEventListener("click", resetToDefault);
 
       for (const diagram of analysisDiagrams) {
         diagram.addEventListener("pointermove", event => {

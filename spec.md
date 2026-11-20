@@ -54,6 +54,11 @@ final design or construction approval.
   | 2x12    | 177.98    | 31.64     |
 
 - Deflection limit: L/240 or L/360 (default L/360).
+- Reset to Default button in the Beam setup header: restore the initial
+  20 ft simply supported steel W12x26 example, with no point loads, one
+  valid 1 kip/ft uniform load from 0 to 20 ft, and L/360. Synchronize the
+  inputs, clear validation feedback and diagram inspection, and refresh the
+  beam drawing, results, checks, and recommendation.
 - Self-weight is ignored.
 
 ## Calculations
@@ -136,6 +141,13 @@ final design or construction approval.
    fails at least one check, show that no listed section passes and omit
    the use-it button. Reversed or non-overlapping uniform-load bounds must
    be rejected with a clear validation message rather than silently used.
+7. After changing the support, span, material/section, deflection limit, and
+   loads—including entering an invalid uniform-load interval—use Reset to
+   Default. Confirm that the controls return to the initial 20 ft simply
+   supported steel W12x26 setup, with no point loads, one valid 1 kip/ft
+   uniform load over 0–20 ft, and L/360; validation feedback and diagram
+   inspection clear, and results match case 1. Confirm reset works again
+   after making further changes.
 - Compare validation values within 0.01 in their stated units and extrema
   locations within 0.01 ft.
 
