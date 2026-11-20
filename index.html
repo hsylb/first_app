@@ -3,8 +3,1561 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Project</title>
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Beam Designer — Preliminary Analysis</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17243b;
+      --muted: #65738a;
+      --soft: #94a0b2;
+      --line: #e4e9f0;
+      --surface: #fff;
+      --page: #f4f7fb;
+      --blue: #2874d0;
+      --blue-dark: #1556a5;
+      --blue-pale: #edf5ff;
+      --teal: #138c87;
+      --green: #2a9b69;
+      --green-pale: #eaf7f0;
+      --amber: #d79017;
+      --amber-pale: #fff6e6;
+      --red: #d45656;
+      --shadow: 0 8px 26px rgb(23 36 59 / 5%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    input,
+    select,
+    summary {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid rgb(40 116 208 / 28%);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: -.025em;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--blue-pale);
+    }
+
+    .brand-mark svg {
+      display: block;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .draft-tag,
+    .screening-tag,
+    .example-tag,
+    .plot-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .075em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .draft-tag {
+      padding: 8px 10px;
+      color: #82590e;
+      background: #fff4d8;
+    }
+
+    .draft-tag::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #d89c22;
+      content: "";
+    }
+
+    .screening-tag {
+      padding: 8px 10px;
+      color: #47627b;
+      background: #f0f4f8;
+    }
+
+    .page {
+      width: min(1512px, 100%);
+      margin: 0 auto;
+      padding: 28px 32px 48px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      font-size: clamp(24px, 3vw, 30px);
+      font-weight: 750;
+      letter-spacing: -.045em;
+      line-height: 1.15;
+    }
+
+    .page-subtitle {
+      max-width: 680px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mock-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      padding: 11px 14px;
+      border: 1px solid #f1dfb7;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #755714;
+      font-size: 12px;
+    }
+
+    .mock-banner svg {
+      flex: 0 0 auto;
+      color: #b17a12;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+
+    .sidebar,
+    .results {
+      min-width: 0;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .setup-card {
+      padding: 18px;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-heading h2,
+    .card-heading h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 720;
+      letter-spacing: -.02em;
+    }
+
+    .example-tag {
+      padding: 6px 8px;
+      color: var(--blue-dark);
+      background: var(--blue-pale);
+      font-size: 9px;
+    }
+
+    .form-section {
+      padding-top: 17px;
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .form-section:first-of-type {
+      padding-top: 15px;
+      margin-top: 13px;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: #53627a;
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .section-label .hint {
+      color: var(--soft);
+      font-size: 11px;
+      font-weight: 550;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .field label,
+    .field > span {
+      color: #59677d;
+      font-size: 12px;
+      font-weight: 620;
+    }
+
+    .field-control,
+    .number-control {
+      width: 100%;
+      min-width: 0;
+      height: 37px;
+      padding: 0 10px;
+      border: 1px solid #dfe5ed;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .field-control:disabled,
+    .number-control:disabled {
+      color: #7d899a;
+      background: #f8fafc;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .uniform-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 10px;
+    }
+
+    .uniform-magnitude {
+      grid-column: 1 / -1;
+    }
+
+    .span-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .span-control input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .number-with-unit {
+      position: relative;
+      min-width: 84px;
+    }
+
+    .number-with-unit .number-control {
+      padding-right: 31px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .unit-inside {
+      position: absolute;
+      top: 50%;
+      right: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .load-group + .load-group {
+      margin-top: 13px;
+    }
+
+    .load-group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .load-row {
+      padding: 10px;
+      border: 1px solid #e8edf3;
+      border-radius: 9px;
+      background: #fbfcfe;
+    }
+
+    .load-row + .load-row {
+      margin-top: 7px;
+    }
+
+    .load-row-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .load-kind {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #33425a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .load-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .load-dot.teal {
+      background: var(--teal);
+    }
+
+    .text-button,
+    .icon-button,
+    .primary-button,
+    .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 0;
+      cursor: default;
+      text-decoration: none;
+    }
+
+    .text-button {
+      padding: 3px 0;
+      background: transparent;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 680;
+    }
+
+    .icon-button {
+      width: 25px;
+      height: 25px;
+      border: 1px solid #e5eaf0;
+      border-radius: 6px;
+      background: #fff;
+      color: #79869a;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .load-empty {
+      padding: 9px 10px;
+      border: 1px dashed #dfe5ed;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .draft-load {
+      margin-top: 7px;
+      padding: 9px 10px 10px;
+      border: 1px solid #e8edf3;
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .draft-load-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #526179;
+      font-size: 11px;
+      font-weight: 680;
+    }
+
+    .preview-label {
+      color: #8692a3;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .load-draft-note {
+      margin: 7px 0 0;
+      color: #7b8799;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .load-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 9px;
+    }
+
+    .material-note {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: #f7f9fc;
+      color: #64728a;
+      font-size: 11px;
+    }
+
+    .selected-properties {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid #e1e9f4;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+
+    .selected-properties span {
+      display: block;
+      margin-bottom: 2px;
+      color: #74839a;
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .selected-properties strong {
+      color: #29496e;
+      font-size: 12px;
+      font-weight: 730;
+    }
+
+    .material-note strong {
+      color: #34445c;
+      font-weight: 700;
+    }
+
+    .small-note {
+      margin: 10px 0 0;
+      color: #7b8799;
+      font-size: 11px;
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+    }
+
+    .beam-card {
+      padding: 16px 18px 12px;
+    }
+
+    .beam-subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .reaction-summary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0 2px;
+    }
+
+    .reaction-summary span {
+      padding: 4px 9px;
+      border: 1px solid #dcefe9;
+      border-radius: 999px;
+      background: #f0faf6;
+      color: #147c77;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .beam-svg,
+    .plot-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+      font-family: inherit;
+    }
+
+    .beam-svg {
+      margin-top: 6px;
+    }
+
+    .beam-line {
+      stroke: #34455f;
+      stroke-linecap: round;
+      stroke-width: 5;
+    }
+
+    .support {
+      fill: #fff;
+      stroke: #53647b;
+      stroke-width: 2;
+    }
+
+    .ground,
+    .dimension {
+      stroke: #9aa6b6;
+      stroke-width: 1.2;
+    }
+
+    .load-line {
+      stroke: var(--blue);
+      stroke-width: 1.6;
+    }
+
+    .reaction-line {
+      stroke: var(--teal);
+      stroke-width: 2;
+    }
+
+    .beam-label {
+      fill: #627188;
+      font-size: 13px;
+    }
+
+    .beam-load-label {
+      fill: var(--blue-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .plot-card {
+      padding: 15px 18px 9px;
+    }
+
+    .plot-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .plot-title-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .plot-title-wrap h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 730;
+    }
+
+    .plot-unit {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .plot-tag {
+      padding: 6px 8px;
+      color: #78869b;
+      background: #f2f5f9;
+      font-size: 9px;
+    }
+
+    .plot-stat {
+      margin: 6px 0 -1px;
+      color: #34445b;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .plot-svg {
+      margin-top: 2px;
+    }
+
+    .gridline {
+      stroke: #e9edf3;
+      stroke-width: 1;
+    }
+
+    .zero-line {
+      stroke: #acb7c5;
+      stroke-width: 1.2;
+    }
+
+    .axis-label {
+      fill: #758298;
+      font-size: 11px;
+    }
+
+    .plot-fill-blue {
+      fill: #dcecff;
+    }
+
+    .plot-fill-teal {
+      fill: #d9f1ee;
+    }
+
+    .plot-fill-indigo {
+      fill: #e7eaff;
+    }
+
+    .plot-line-blue,
+    .plot-line-teal,
+    .plot-line-indigo {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2.7;
+    }
+
+    .plot-line-blue {
+      stroke: var(--blue);
+    }
+
+    .plot-line-teal {
+      stroke: var(--teal);
+    }
+
+    .plot-line-indigo {
+      stroke: #6875d6;
+    }
+
+    .crosshair {
+      stroke: #536b8c;
+      stroke-dasharray: 4 4;
+      stroke-width: 1.3;
+    }
+
+    .plot-dot-blue {
+      fill: var(--blue);
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .plot-dot-teal {
+      fill: var(--teal);
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .plot-dot-indigo {
+      fill: #6875d6;
+      stroke: #fff;
+      stroke-width: 2;
+    }
+
+    .axis-foot {
+      position: relative;
+      height: 16px;
+      margin: -4px 13.333% 0;
+      color: #8793a4;
+      font-size: 11px;
+    }
+
+    .axis-foot span {
+      position: absolute;
+      top: 0;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+
+    .axis-foot span:nth-child(1) {
+      left: 0;
+    }
+
+    .axis-foot span:nth-child(2) {
+      left: 25%;
+    }
+
+    .axis-foot span:nth-child(3) {
+      left: 50%;
+    }
+
+    .axis-foot span:nth-child(4) {
+      left: 75%;
+    }
+
+    .axis-foot span:nth-child(5) {
+      left: 100%;
+    }
+
+    .axis-foot span:last-child {
+      color: #66748a;
+    }
+
+    .crosshair-note {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 7px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 7px 0 0 auto;
+      padding: 7px 9px;
+      border: 1px solid #e5eaf1;
+      border-radius: 7px;
+      background: #fbfcfe;
+      color: #53627a;
+      font-size: 11px;
+    }
+
+    .crosshair-note strong {
+      color: var(--ink);
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(245px, .9fr);
+      gap: 14px;
+    }
+
+    .checks-card,
+    .recommend-card {
+      padding: 16px 18px;
+    }
+
+    .check-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 13px;
+    }
+
+    .check-item {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #e8edf3;
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .check-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .check-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #35445a;
+      font-size: 11px;
+      font-weight: 720;
+    }
+
+    .info {
+      display: inline-grid;
+      width: 15px;
+      height: 15px;
+      place-items: center;
+      border: 1px solid #dce3ec;
+      border-radius: 50%;
+      color: #75839a;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: help;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .06em;
+    }
+
+    .status.pass {
+      color: #20734d;
+      background: var(--green-pale);
+    }
+
+    .check-values {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+      color: #7b8799;
+      font-size: 10px;
+    }
+
+    .check-values strong {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .check-values .allowable {
+      text-align: right;
+    }
+
+    .meter {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf0f4;
+    }
+
+    .meter > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .meter .green {
+      width: 59.9%;
+      background: var(--green);
+    }
+
+    .meter .amber {
+      width: 91.3%;
+      background: var(--amber);
+    }
+
+    .ratio-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      color: #8a95a5;
+      font-size: 10px;
+    }
+
+    .recommend-card {
+      position: relative;
+      overflow: hidden;
+      border-color: #dbe8f8;
+      background: linear-gradient(145deg, #f8fbff 0%, #fff 80%);
+    }
+
+    .recommend-card::after {
+      position: absolute;
+      top: -30px;
+      right: -24px;
+      width: 112px;
+      height: 112px;
+      border: 1px solid #e4effd;
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+
+    .recommend-kicker {
+      margin: 11px 0 2px;
+      color: #6b7b92;
+      font-size: 11px;
+    }
+
+    .recommend-name {
+      margin: 0;
+      color: #173c70;
+      font-size: 21px;
+      font-weight: 760;
+      letter-spacing: -.04em;
+    }
+
+    .recommend-detail {
+      margin: 2px 0 10px;
+      color: #63748c;
+      font-size: 11px;
+    }
+
+    .recommend-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 13px;
+      color: #26734f;
+      font-size: 11px;
+      font-weight: 660;
+    }
+
+    .recommend-status svg {
+      color: var(--green);
+    }
+
+    .primary-button,
+    .secondary-button {
+      min-height: 35px;
+      padding: 0 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 2px 5px rgb(40 116 208 / 18%);
+    }
+
+    .secondary-button {
+      border: 1px solid #dfe5ed;
+      background: #fff;
+      color: #485971;
+    }
+
+    .footnote {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 14px 2px 0;
+      color: #758298;
+      font-size: 11px;
+    }
+
+    .footnote svg {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: #8d99a9;
+    }
+
+    @media (max-width: 1050px) {
+      .page {
+        padding-right: 22px;
+        padding-left: 22px;
+      }
+
+      .workspace {
+        grid-template-columns: minmax(275px, 310px) minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        height: 60px;
+        padding: 0 17px;
+      }
+
+      .topbar-right {
+        gap: 7px;
+      }
+
+      .screening-tag {
+        display: none;
+      }
+
+      .page {
+        padding: 22px 15px 32px;
+      }
+
+      .page-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .sidebar {
+        order: 0;
+      }
+
+      .results {
+        order: 1;
+      }
+
+      .beam-card,
+      .plot-card {
+        padding-right: 13px;
+        padding-left: 13px;
+      }
+
+      .plot-card {
+        padding-top: 13px;
+      }
+
+    }
+
+    @media (max-width: 480px) {
+      .brand {
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .draft-tag {
+        padding: 7px 8px;
+        font-size: 8px;
+      }
+
+      .page {
+        padding-right: 11px;
+        padding-left: 11px;
+      }
+
+      .setup-card,
+      .checks-card,
+      .recommend-card {
+        padding: 14px;
+      }
+
+      .check-list {
+        grid-template-columns: 1fr;
+      }
+
+      .crosshair-note {
+        flex-wrap: wrap;
+        font-size: 10px;
+      }
+
+      .plot-tag {
+        display: none;
+      }
+
+      .beam-svg .beam-label,
+      .beam-svg .beam-load-label {
+        font-size: 30px;
+      }
+
+      .plot-svg .axis-label {
+        font-size: 30px;
+      }
+
+      .load-actions {
+        gap: 11px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .topbar .draft-tag {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 5.5h14M3 14.5h14M5 5.5v9M15 5.5v9" stroke="#2874d0" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M6.5 8.5 10 12l3.5-3.5" stroke="#138c87" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span>Beam Designer</span>
+    </div>
+    <div class="topbar-right">
+      <span class="screening-tag">Preliminary screening only</span>
+      <span class="draft-tag">Static visual mockup</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Beam analysis workspace</p>
+        <h1>Beam Designer</h1>
+        <p class="page-subtitle">Set up a beam, review its response, and screen a section for bending and deflection.</p>
+      </div>
+      <span class="example-tag">Example loaded · 20 ft span</span>
+    </div>
+
+    <div class="mock-banner" role="note">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 9v4M10 6.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span><strong>Visual prototype.</strong> Controls and analysis values are illustrative placeholders and do not update. No calculations are implemented.</span>
+    </div>
+
+    <div class="workspace">
+      <aside class="sidebar" aria-label="Beam inputs">
+        <section class="card setup-card">
+          <div class="card-heading">
+            <h2>Beam setup</h2>
+            <span class="example-tag">Default case</span>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">Supports &amp; span</div>
+            <div class="field">
+              <label for="support-type">Support type</label>
+              <select class="field-control" id="support-type" aria-label="Support type">
+                <option selected>Simply supported</option>
+                <option>Cantilever (fixed left)</option>
+              </select>
+            </div>
+            <div class="field" style="margin-top: 12px">
+              <div class="section-label" style="margin: 0 0 5px">
+                <label for="span-range">Span</label>
+                <span class="hint">4–40 ft</span>
+              </div>
+              <div class="span-control">
+                <input id="span-range" type="range" min="4" max="40" step="0.25" value="20" aria-label="Span, 4 to 40 feet">
+                <div class="number-with-unit">
+                  <input class="number-control" id="span-value" type="number" min="4" max="40" step="0.25" value="20" aria-label="Span in feet">
+                  <span class="unit-inside">ft</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">
+              <span>Loads</span>
+              <span class="hint">Downward positive</span>
+            </div>
+
+            <div class="load-group">
+              <div class="load-group-title">
+                <span class="load-kind"><span class="load-dot"></span>Point loads</span>
+                <span class="hint">0 in example</span>
+              </div>
+              <div class="load-empty">No point loads in this example.</div>
+              <div class="draft-load" aria-label="Point load input preview">
+                <div class="draft-load-title">
+                  <span>New point load</span>
+                  <span class="preview-label">Input preview</span>
+                </div>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="point-magnitude">Magnitude (kips)</label>
+                    <input class="field-control" id="point-magnitude" type="number" min="0" step="0.1" value="5.0">
+                  </div>
+                  <div class="field">
+                    <label for="point-position">Position (ft)</label>
+                    <input class="field-control" id="point-position" type="number" min="0" max="20" step="0.25" value="10.0">
+                  </div>
+                </div>
+                <p class="load-draft-note">Preview only; not included in the example. Dragged point loads snap to 0.25 ft.</p>
+              </div>
+              <div class="load-actions">
+                <button class="text-button" type="button" aria-disabled="true">＋ Add point load</button>
+              </div>
+            </div>
+
+            <div class="load-group">
+              <div class="load-group-title">
+                <span class="load-kind"><span class="load-dot teal"></span>Uniform loads</span>
+                <span class="hint">1 active</span>
+              </div>
+              <div class="load-row">
+                <div class="load-row-head">
+                  <span class="load-kind">Uniform load 1</span>
+                  <button class="icon-button" type="button" aria-label="Remove uniform load" aria-disabled="true">×</button>
+                </div>
+                <div class="uniform-fields">
+                  <div class="field uniform-magnitude">
+                    <label for="uniform-magnitude">Magnitude (kips/ft)</label>
+                    <input class="field-control" id="uniform-magnitude" type="number" min="0" step="0.01" value="1.00">
+                  </div>
+                  <div class="field">
+                    <label for="uniform-start">Start (ft)</label>
+                    <input class="field-control" id="uniform-start" type="number" step="0.25" value="0.00">
+                  </div>
+                  <div class="field">
+                    <label for="uniform-end">End (ft)</label>
+                    <input class="field-control" id="uniform-end" type="number" step="0.25" value="20.00">
+                  </div>
+                </div>
+              </div>
+              <div class="load-actions">
+                <button class="text-button" type="button" aria-disabled="true">＋ Add uniform load</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">Material &amp; section</div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="material">Material</label>
+                <select class="field-control" id="material">
+                  <option selected>Steel W-shapes</option>
+                  <option>Douglas Fir-Larch No. 2</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="section">Section</label>
+                <select class="field-control" id="section">
+                  <optgroup label="Steel W-shapes">
+                    <option>W8x10</option>
+                    <option>W10x12</option>
+                    <option selected>W12x26</option>
+                    <option>W14x22</option>
+                    <option>W16x26</option>
+                    <option>W18x35</option>
+                    <option>W21x44</option>
+                    <option>W24x55</option>
+                  </optgroup>
+                  <optgroup label="Douglas Fir-Larch No. 2">
+                    <option>2x8</option>
+                    <option>2x10</option>
+                    <option>2x12</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <div class="selected-properties" aria-label="Selected material and section">
+              <div>
+                <span>Selected material</span>
+                <strong>Steel W-shapes</strong>
+              </div>
+              <div>
+                <span>Selected section</span>
+                <strong>W12x26</strong>
+              </div>
+            </div>
+            <div class="material-note" aria-label="Properties for selected steel section W12x26">
+              <span><strong>Iₓ</strong> 204 in⁴</span>
+              <span><strong>Sₓ</strong> 33.4 in³</span>
+              <span><strong>E</strong> 29,000 ksi</span>
+              <span><strong>Fᵦ</strong> 30 ksi</span>
+              <span><strong>Weight</strong> 26 lb/ft</span>
+            </div>
+            <p class="small-note">Other material reference: Douglas Fir-Larch No. 2 · E = 1,600 ksi · Fb = 0.900 ksi</p>
+          </div>
+
+          <div class="form-section">
+            <div class="section-label">Deflection limit</div>
+            <div class="field">
+              <label for="deflection-limit">Allowable deflection</label>
+              <select class="field-control" id="deflection-limit">
+                <option>L/240</option>
+                <option selected>L/360</option>
+              </select>
+            </div>
+            <p class="small-note">Self-weight is ignored.</p>
+          </div>
+        </section>
+      </aside>
+
+      <section class="results" aria-label="Beam results">
+        <section class="card beam-card" aria-labelledby="beam-view-heading">
+          <div class="card-heading">
+            <div>
+              <h2 id="beam-view-heading">Beam model</h2>
+              <p class="beam-subtitle">Simply supported · 20 ft · W12x26 · 1.00 kip/ft full-span uniform load</p>
+            </div>
+            <span class="plot-tag">Illustrative values</span>
+          </div>
+          <div class="reaction-summary" aria-label="Illustrative support reactions">
+            <span>R<sub>A</sub> = 10 kips</span>
+            <span>R<sub>B</sub> = 10 kips</span>
+          </div>
+          <svg class="beam-svg" viewBox="0 0 900 190" role="img" aria-labelledby="beam-title beam-desc">
+            <title id="beam-title">Simply supported 20-foot beam with a full-span uniform load</title>
+            <desc id="beam-desc">A 1 kip per foot downward uniform load acts over the entire span. Upward reactions are 10 kips at each support.</desc>
+            <defs>
+              <marker id="load-arrow" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto" markerUnits="strokeWidth">
+                <path d="M1 1 4 7 7 1" fill="none" stroke="#2874d0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </marker>
+              <marker id="reaction-arrow" markerWidth="9" markerHeight="9" refX="4.5" refY="1.5" orient="auto" markerUnits="strokeWidth">
+                <path d="M1 7 4.5 1 8 7" fill="none" stroke="#138c87" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </marker>
+              <marker id="dimension-arrow" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse">
+                <path d="M0 0 7 3.5 0 7" fill="none" stroke="#9aa6b6" stroke-width="1"/>
+              </marker>
+            </defs>
+            <text x="450" y="21" text-anchor="middle" class="beam-load-label">w = 1.00 kip/ft · downward</text>
+            <line x1="120" y1="35" x2="780" y2="35" class="load-line"/>
+            <g class="load-line" marker-end="url(#load-arrow)">
+              <line x1="120" y1="38" x2="120" y2="76"/>
+              <line x1="175" y1="38" x2="175" y2="76"/>
+              <line x1="230" y1="38" x2="230" y2="76"/>
+              <line x1="285" y1="38" x2="285" y2="76"/>
+              <line x1="340" y1="38" x2="340" y2="76"/>
+              <line x1="395" y1="38" x2="395" y2="76"/>
+              <line x1="450" y1="38" x2="450" y2="76"/>
+              <line x1="505" y1="38" x2="505" y2="76"/>
+              <line x1="560" y1="38" x2="560" y2="76"/>
+              <line x1="615" y1="38" x2="615" y2="76"/>
+              <line x1="670" y1="38" x2="670" y2="76"/>
+              <line x1="725" y1="38" x2="725" y2="76"/>
+              <line x1="780" y1="38" x2="780" y2="76"/>
+            </g>
+            <line x1="120" y1="107" x2="120" y2="76" class="reaction-line" marker-end="url(#reaction-arrow)"/>
+            <line x1="780" y1="107" x2="780" y2="76" class="reaction-line" marker-end="url(#reaction-arrow)"/>
+            <line x1="120" y1="112" x2="780" y2="112" class="beam-line"/>
+            <path d="M103 115 120 135 137 115Z" class="support"/>
+            <path d="M763 115 780 135 797 115Z" class="support"/>
+            <line x1="92" y1="138" x2="148" y2="138" class="ground"/>
+            <line x1="752" y1="138" x2="808" y2="138" class="ground"/>
+            <line x1="120" y1="156" x2="780" y2="156" class="dimension" marker-start="url(#dimension-arrow)" marker-end="url(#dimension-arrow)"/>
+            <line x1="120" y1="145" x2="120" y2="162" class="dimension"/>
+            <line x1="450" y1="145" x2="450" y2="162" class="dimension"/>
+            <line x1="780" y1="145" x2="780" y2="162" class="dimension"/>
+            <text x="120" y="179" text-anchor="middle" class="beam-label">0 ft</text>
+            <text x="450" y="179" text-anchor="middle" class="beam-label">10 ft</text>
+            <text x="780" y="179" text-anchor="middle" class="beam-label">20 ft</text>
+          </svg>
+        </section>
+
+        <section class="card plot-card" aria-labelledby="shear-heading">
+          <div class="plot-header">
+            <div class="plot-title-wrap">
+              <h3 id="shear-heading">Shear force</h3>
+              <span class="plot-unit">V (kips)</span>
+            </div>
+            <span class="plot-tag">Static plot</span>
+          </div>
+          <p class="plot-stat">Largest absolute values: <strong>+10.0 k</strong> at <strong>0 ft</strong> and <strong>−10.0 k</strong> at <strong>20 ft</strong></p>
+          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static shear diagram, decreasing linearly from plus 10 kips at zero feet to minus 10 kips at 20 feet">
+            <line x1="120" y1="30" x2="780" y2="30" class="gridline"/>
+            <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
+            <line x1="120" y1="142" x2="780" y2="142" class="gridline"/>
+            <g class="gridline">
+              <line x1="120" y1="24" x2="120" y2="148"/>
+              <line x1="285" y1="24" x2="285" y2="148"/>
+              <line x1="450" y1="24" x2="450" y2="148"/>
+              <line x1="615" y1="24" x2="615" y2="148"/>
+              <line x1="780" y1="24" x2="780" y2="148"/>
+            </g>
+            <path d="M120 86 120 30 780 142 780 86Z" class="plot-fill-blue"/>
+            <path d="M120 30 780 142" class="plot-line-blue"/>
+            <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
+            <circle cx="450" cy="86" r="4.5" class="plot-dot-blue"/>
+            <text x="126" y="25" class="axis-label">+10</text>
+            <text x="126" y="138" class="axis-label">−10</text>
+            <text x="457" y="80" class="axis-label">0</text>
+          </svg>
+          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+        </section>
+
+        <section class="card plot-card" aria-labelledby="moment-heading">
+          <div class="plot-header">
+            <div class="plot-title-wrap">
+              <h3 id="moment-heading">Bending moment</h3>
+              <span class="plot-unit">M (kip-ft)</span>
+            </div>
+            <span class="plot-tag">Static plot</span>
+          </div>
+          <p class="plot-stat">Largest absolute value: <strong>+50.0 kip-ft</strong> at <strong>x = 10 ft</strong></p>
+          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static moment diagram, a positive parabola with a maximum of 50 kip-feet at midspan">
+            <line x1="120" y1="30" x2="780" y2="30" class="gridline"/>
+            <line x1="120" y1="85" x2="780" y2="85" class="gridline"/>
+            <line x1="120" y1="140" x2="780" y2="140" class="zero-line"/>
+            <g class="gridline">
+              <line x1="120" y1="24" x2="120" y2="146"/>
+              <line x1="285" y1="24" x2="285" y2="146"/>
+              <line x1="450" y1="24" x2="450" y2="146"/>
+              <line x1="615" y1="24" x2="615" y2="146"/>
+              <line x1="780" y1="24" x2="780" y2="146"/>
+            </g>
+            <path d="M120 140 Q450 -80 780 140 L780 140Z" class="plot-fill-teal"/>
+            <path d="M120 140 Q450 -80 780 140" class="plot-line-teal"/>
+            <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
+            <circle cx="450" cy="30" r="4.5" class="plot-dot-teal"/>
+            <text x="457" y="25" class="axis-label">+50</text>
+          </svg>
+          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+        </section>
+
+        <section class="card plot-card" aria-labelledby="deflection-heading">
+          <div class="plot-header">
+            <div class="plot-title-wrap">
+              <h3 id="deflection-heading">Deflected shape</h3>
+              <span class="plot-unit">y (in)</span>
+            </div>
+            <span class="plot-tag">Static plot</span>
+          </div>
+          <p class="plot-stat">Largest absolute value: <strong>+0.609 in</strong> at <strong>x = 10 ft</strong></p>
+          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static deflection shape, curving downward to 0.609 inches at midspan">
+            <defs>
+              <clipPath id="deflection-plot-clip">
+                <rect x="120" y="24" width="660" height="120"/>
+              </clipPath>
+            </defs>
+              <line x1="120" y1="40" x2="780" y2="40" class="zero-line"/>
+              <line x1="120" y1="88" x2="780" y2="88" class="gridline"/>
+              <line x1="120" y1="136" x2="780" y2="136" class="gridline"/>
+            <g class="gridline">
+                <line x1="120" y1="24" x2="120" y2="144"/>
+                <line x1="285" y1="24" x2="285" y2="144"/>
+                <line x1="450" y1="24" x2="450" y2="144"/>
+                <line x1="615" y1="24" x2="615" y2="144"/>
+                <line x1="780" y1="24" x2="780" y2="144"/>
+            </g>
+              <path d="M120 40 C230 138 670 138 780 40 L780 40Z" class="plot-fill-indigo" clip-path="url(#deflection-plot-clip)"/>
+              <path d="M120 40 C230 138 670 138 780 40" class="plot-line-indigo" clip-path="url(#deflection-plot-clip)"/>
+              <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
+              <circle cx="450" cy="114" r="4.5" class="plot-dot-indigo"/>
+              <text x="457" y="110" class="axis-label">+0.609</text>
+          </svg>
+          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+          <div class="crosshair-note" aria-label="Static crosshair preview at 10 feet">
+            <span>At <strong>x = 10 ft</strong></span>
+            <span>V = 0.0 k</span>
+            <span>M = +50.0 kip-ft</span>
+            <span>y = +0.609 in</span>
+          </div>
+        </section>
+
+        <div class="bottom-grid">
+          <section class="card checks-card" aria-labelledby="checks-heading">
+            <div class="card-heading">
+              <h2 id="checks-heading">Section checks</h2>
+              <span class="plot-tag">W12x26</span>
+            </div>
+            <div class="check-list">
+              <article class="check-item" title="Bending stress fb = maximum absolute moment × 12 / section modulus Sx. Passes when fb ≤ allowable Fb.">
+                <div class="check-top">
+                  <span class="check-title">Bending <span class="info" aria-label="Formula: maximum absolute moment times 12 divided by Sx">i</span></span>
+                  <span class="status pass">PASS</span>
+                </div>
+                <div class="check-values">
+                  <span>Actual<strong>17.96 ksi</strong></span>
+                  <span class="allowable">Allowable<strong>30.00 ksi</strong></span>
+                </div>
+                <div class="meter" role="img" aria-label="Bending ratio 59.9 percent, green"><span class="green"></span></div>
+                <div class="ratio-label"><span>Actual / allowable</span><strong>59.9%</strong></div>
+              </article>
+              <article class="check-item" title="Deflection check compares maximum absolute deflection with the selected span limit, here L/360.">
+                <div class="check-top">
+                  <span class="check-title">Deflection <span class="info" aria-label="Formula: maximum absolute deflection compared with L divided by 360">i</span></span>
+                  <span class="status pass">PASS</span>
+                </div>
+                <div class="check-values">
+                  <span>Actual<strong>0.609 in</strong></span>
+                  <span class="allowable">Allowable<strong>0.667 in</strong></span>
+                </div>
+                <div class="meter" role="img" aria-label="Deflection ratio 91.3 percent, amber"><span class="amber"></span></div>
+                <div class="ratio-label"><span>Actual / allowable</span><strong>91.3%</strong></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="card recommend-card" aria-labelledby="recommend-heading">
+            <div class="card-heading">
+              <h2 id="recommend-heading">Section recommendation</h2>
+              <span class="plot-tag">Steel W-shapes</span>
+            </div>
+            <p class="recommend-kicker">Lightest listed section passing both checks</p>
+            <p class="recommend-name">W14x22</p>
+            <p class="recommend-detail">22 lb/ft · Ix 199 in⁴ · Sx 29.0 in³</p>
+            <p class="recommend-status">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="7" fill="currentColor" opacity=".14"/>
+                <path d="m4.5 8.2 2.2 2.1 4.8-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Passes bending and deflection · illustrative
+            </p>
+            <button class="primary-button" type="button" aria-disabled="true">Use this section <span aria-hidden="true">→</span></button>
+          </section>
+        </div>
+
+        <p class="footnote">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor"/>
+            <path d="M8 7.3v3.5M8 5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          Preliminary screening only. Self-weight, shear stress, stability, load combinations, and code-specific design factors are outside this model.
+        </p>
+      </section>
+    </div>
+  </main>
 </body>
 </html>

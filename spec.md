@@ -139,6 +139,81 @@ final design or construction approval.
 - Compare validation values within 0.01 in their stated units and extrema
   locations within 0.01 ft.
 
+## Build stages
+
+### 1. Creating the complete visual mockup
+
+- **Goal:** Lay out the full page: input panel; beam, supports and example
+  load drawing; shear, moment and deflection chart placeholders; bending and
+  deflection cards; recommendation area. Apply the specified clean visual
+  style and responsive panel stacking. Use static values for the default
+  20 ft simply supported W12x26 example. Do not implement calculations.
+- **Expect to see:** The complete page structure on desktop and a stacked
+  layout on a narrow screen. Static example results are clearly mockup
+  content, not responsive to input changes.
+- **Test:** Open the root `index.html` in a browser at desktop and phone
+  widths. Confirm every specified page region is present, readable, and
+  arranged as described; confirm no calculation behavior is implied.
+
+### 2. Adding inputs and beam/load interactions
+
+- **Goal:** Add synchronized span slider/number input, support and
+  material/section selection, deflection-limit selection, and editable
+  point/uniform load lists. Implement add/remove, input validation,
+  point-load dragging with 0.25 ft snapping, and the specified load-bound
+  and clipping rules. Keep analysis outputs explicitly pending/mock until
+  calculation stages are complete.
+- **Expect to see:** Input changes immediately update the selected controls
+  and beam drawing. Invalid uniform-load bounds show clear feedback; valid
+  uniform loads are drawn only over their clipped span.
+- **Test:** Check span limits and synchronization; add, edit and remove each
+  load type; verify point-load positions stay within the beam and snap as
+  specified; check uniform-load clipping, rejected reversed/non-overlapping
+  bounds, support defaults, and material/section choices.
+
+### 3. Implementing reactions, shear, and moment
+
+- **Goal:** Calculate reactions by static equilibrium and signed V(x) and
+  M(x) using the specified conventions. Evaluate load discontinuities and
+  piecewise extrema accurately rather than selecting maxima from chart
+  samples. Render the reaction arrows and shear/moment diagrams; retain
+  clear placeholders for deflection and checks.
+- **Expect to see:** Changing a valid load updates reactions and signed
+  shear/moment diagrams and their labeled extrema, while deflection remains
+  pending.
+- **Test:** Compare reactions, shear, and moment against spec validation
+  cases 1, 2, 4, and clipped-load case 5, including the stated tolerances.
+  Check point-load jumps, uniform-load slopes, and signed diagram values.
+
+### 4. Implementing deflection, checks, and section recommendation
+
+- **Goal:** Integrate the specified beam equation with the support
+  boundary conditions; locate maximum absolute deflection accurately.
+  Calculate bending stress and deflection pass/fail ratios, color bands,
+  and the best passing section in the selected material, including steel
+  tie-breaking, the smallest-listed lumber rule, and the no-passing state.
+- **Expect to see:** Both diagrams and check cards update when inputs or
+  the selected section change. The recommendation button appears only when
+  a listed section passes.
+- **Test:** Compare stresses, deflections, limits, and check statuses
+  against validation cases 1–4. Check the steel tie rule, lumber selection,
+  and a load case where no section passes.
+
+### 5. Integrating interactions and validating the finished page
+
+- **Goal:** Connect the diagram pointer interaction across all three
+  diagrams, formula explanations on the check cards, the recommendation
+  button, and the responsive layout. Remove mock values and ensure the
+  example loads on startup. Keep saving designs and all other out-of-scope
+  items unimplemented.
+- **Expect to see:** The complete app updates consistently from the initial
+  example through load editing, section changes, checks, and recommendation;
+  diagram inspection shows V, M, and y at a shared x position.
+- **Test:** Run all six validation items in `spec.md` in the browser,
+  including invalid-load feedback and no-passing-section behavior. Recheck
+  desktop and phone layouts, the initial example, hover explanations, and
+  that values and labels remain within the specified tolerances.
+
 ## Out of scope
 - Self-weight, shear stress, lateral-torsional buckling, load
   combinations, code-specific design factors, and continuous beams. Results
