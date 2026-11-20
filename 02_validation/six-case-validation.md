@@ -94,3 +94,23 @@ defaults. The reset button fit without overlap or horizontal overflow at
 1440, 390, and 320 px. The six calculation cases were also rerun through
 the app functions after this feature; their values and statuses were
 unchanged and remain within tolerance.
+
+## Copy Results regression (spec case 8)
+
+Browser checks copied the default example and verified the summary included
+the current span, support, material, section, uniform load, reactions, signed
+shear/moment/deflection extrema and positions, and both check values and
+statuses. A modified 10-ft cantilever using lumber 2x10, a point load, a
+clipped valid uniform load, and a reversed invalid interval showed those
+current inputs; the invalid interval was marked excluded and the valid load's
+effective clipped range was identified. Clipboard success and rejected-write
+feedback were both checked, with no horizontal overflow at 1440, 390, or 320
+px and no browser page errors.
+
+After the feature changes, cases 1–6 were run again against the actual
+`calculateBeamResponse()` and `calculateStage4Results()` functions. Reactions,
+extrema and locations, check results, and recommendations remained the same
+as the results above and within the specified tolerances. The default load is
+formatted as `1 kip/ft`; point-load units use `kip` for a magnitude of 1 and
+`kips` otherwise. Copy feedback is cleared when an input changes, so success
+or error status cannot be mistaken for the result of a later input state.

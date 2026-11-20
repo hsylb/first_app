@@ -105,6 +105,14 @@ final design or construction approval.
 - A line suggesting the lightest passing steel section or smallest passing
   lumber size in the selected material, with a button to use it. If no
   listed section passes, say so and do not show a use-it button.
+- A Copy Results button near the top of the results panel. Copy a readable
+  plain-text summary with the current span, support, material, section, all
+  entered point and uniform loads, reactions (including a cantilever's
+  fixed-end moment), signed maximum absolute shear, moment, and deflection
+  with locations, and the actual, allowable, and PASS/FAIL status for both
+  checks. Mark invalid loads as excluded from analysis and note clipping for
+  valid uniform loads outside the span. Show brief success or error feedback
+  for the clipboard operation.
 - Everything updates immediately whenever any input changes.
 
 ## Look and feel
@@ -148,6 +156,13 @@ final design or construction approval.
    uniform load over 0–20 ft, and L/360; validation feedback and diagram
    inspection clear, and results match case 1. Confirm reset works again
    after making further changes.
+8. Copy results for the default example and confirm the summary contains its
+   inputs, loads, reactions, signed extrema and locations, and both check
+   actuals, allowables, and statuses with correct units. Change inputs and
+   loads, including an invalid uniform interval and a clipped valid interval;
+   confirm the copied summary reflects the current beam, marks invalid loads
+   excluded, and identifies clipping. Confirm success feedback after a
+   successful copy and clear error feedback if clipboard access is denied.
 - Compare validation values within 0.01 in their stated units and extrema
   locations within 0.01 ft.
 

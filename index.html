@@ -647,6 +647,36 @@
       background: #fff1cd;
     }
 
+    .results-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 10px;
+    }
+
+    .copy-results-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .copy-results-status {
+      max-width: 190px;
+      color: #53627a;
+      font-size: 10px;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .copy-results-status[data-state="success"] {
+      color: var(--green);
+    }
+
+    .copy-results-status[data-state="error"] {
+      color: var(--red);
+    }
+
     .beam-line {
       stroke: #34455f;
       stroke-linecap: round;
@@ -1154,6 +1184,10 @@
         order: 1;
       }
 
+      .results-toolbar {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
       .beam-card,
       .plot-card {
         padding-right: 13px;
@@ -1383,9 +1417,15 @@
       </aside>
 
       <section class="results" aria-label="Beam results">
-        <div class="results-notice" role="note">
-          <span class="plot-tag">Stage 5 interactions</span>
-          <span>Results update from valid loads; moving over any diagram shows values at a shared beam position.</span>
+        <div class="results-toolbar">
+          <div class="results-notice" role="note">
+            <span class="plot-tag">Stage 5 interactions</span>
+            <span>Results update from valid loads; moving over any diagram shows values at a shared beam position.</span>
+          </div>
+          <div class="copy-results-actions">
+            <button class="secondary-button" id="copy-results" type="button">Copy Results</button>
+            <span class="copy-results-status" id="copy-results-status" role="status" aria-live="polite" hidden></span>
+          </div>
         </div>
         <section class="card beam-card" aria-labelledby="beam-view-heading">
           <div class="card-heading">
@@ -1615,6 +1655,8 @@
         addPoint: document.getElementById("add-point-load"),
         addUniform: document.getElementById("add-uniform-load"),
         resetDefault: document.getElementById("reset-default"),
+        copyResults: document.getElementById("copy-results"),
+        copyResultsStatus: document.getElementById("copy-results-status"),
         beamSvg: document.getElementById("beam-svg"),
         beamElements: document.getElementById("beam-elements"),
         beamTitle: document.getElementById("beam-title"),
@@ -2347,6 +2389,103 @@
         elements.recommendStatusText.textContent = "Passes bending and deflection";
       }
 
+      function getEnteredLoadValue(container, load, field) {
+        const row = container.querySelector(`[data-load-id="${load.id}"]`);
+        const input = row?.querySelector(`input[data-field="${field}"]`);
+        if (input) return input.value.trim() || "blank";
+        const value = load[field];
+        return Number.isFinite(value) ? formatNumber(value, 3) : "blank";
+      }
+
+      function buildLoadSummary(kind, container, loads) {
+        if (loads.length === 0) return [`  No ${kind.toLowerCase()} loads.`];
+        return loads.map((load, index) => {
+          const status = load.valid ? "valid" : "INVALID — excluded from analysis";
+          const magnitude = getEnteredLoadValue(container, load, "magnitude");
+          if (kind === "Point") {
+            const unit = Number(magnitude) === 1 ? "kip" : "kips";
+            return `  ${kind} load ${index + 1}: ${magnitude} ${unit} at ${getEnteredLoadValue(container, load, "position")} ft [${status}]`;
+          }
+
+          const startText = getEnteredLoadValue(container, load, "start");
+          const endText = getEnteredLoadValue(container, load, "end");
+          let clipping = "";
+          if (load.valid) {
+            const start = Number(startText);
+            const end = Number(endText);
+            if (start < 0 || end > currentAnalysis.span) {
+              clipping = `; clipped to ${formatNumber(Math.max(0, start), 3)}–${formatNumber(Math.min(currentAnalysis.span, end), 3)} ft`;
+            }
+          }
+          return `  Uniform load ${index + 1}: ${magnitude} kip/ft from ${startText} ft to ${endText} ft [${status}${clipping}]`;
+        });
+      }
+
+      function buildResultsSummary() {
+        const supportLabel = state.support === "simple"
+          ? "Simply supported"
+          : "Cantilever (fixed left)";
+        const reactionLines = state.support === "simple"
+          ? [
+            `  R_A = ${formatSignedValue(currentAnalysis.reactions.left)} kips (upward)`,
+            `  R_B = ${formatSignedValue(currentAnalysis.reactions.right)} kips (upward)`
+          ]
+          : [
+            `  R_A = ${formatSignedValue(currentAnalysis.reactions.left)} kips (upward)`,
+            `  M_A = ${formatSignedValue(currentAnalysis.reactions.fixedMoment)} kip-ft (${currentAnalysis.reactions.fixedMoment < 0 ? "clockwise" : "counterclockwise"})`
+          ];
+        return [
+          "Beam Designer — Results",
+          `Span: ${formatNumber(currentAnalysis.span, 3)} ft`,
+          `Support: ${supportLabel}`,
+          `Material: ${currentSectionResults.material.label}`,
+          `Section: ${currentSectionResults.selected.section.name}`,
+          "",
+          "Point loads:",
+          ...buildLoadSummary("Point", elements.pointList, state.pointLoads),
+          "Uniform loads:",
+          ...buildLoadSummary("Uniform", elements.uniformList, state.uniformLoads),
+          "",
+          "Support reactions:",
+          ...reactionLines,
+          "",
+          elements.shearStat.textContent,
+          elements.momentStat.textContent,
+          elements.deflectionStat.textContent,
+          "",
+          `Bending check: actual ${elements.bendingActual.textContent}; allowable ${elements.bendingAllowable.textContent}; ${elements.bendingStatus.textContent}`,
+          `Deflection check: actual ${elements.deflectionActual.textContent}; allowable ${elements.deflectionAllowable.textContent}; ${elements.deflectionStatus.textContent}`
+        ].join("\n");
+      }
+
+      function setCopyResultsStatus(message, status) {
+        elements.copyResultsStatus.textContent = message;
+        elements.copyResultsStatus.dataset.state = status;
+        elements.copyResultsStatus.hidden = false;
+      }
+
+      function clearCopyResultsStatus() {
+        elements.copyResultsStatus.hidden = true;
+        elements.copyResultsStatus.textContent = "";
+        elements.copyResultsStatus.removeAttribute("data-state");
+      }
+
+      async function copyResults() {
+        clearCopyResultsStatus();
+        const summary = buildResultsSummary();
+        if (typeof navigator.clipboard?.writeText !== "function") {
+          setCopyResultsStatus("Could not copy results. Check browser clipboard permissions and try again.", "error");
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(summary);
+          setCopyResultsStatus("Results copied to clipboard.", "success");
+        } catch {
+          setCopyResultsStatus("Could not copy results. Check browser clipboard permissions and try again.", "error");
+        }
+      }
+
       function setReactionLabel(element, symbol, subscriptValue, value, unit, suffix = "") {
         element.replaceChildren(document.createTextNode(symbol));
         const subscript = document.createElement("sub");
@@ -2607,6 +2746,7 @@
       }
 
       function renderBeam() {
+        clearCopyResultsStatus();
         const analysis = calculateBeamResponse();
         const sectionResults = calculateStage4Results(analysis);
         currentAnalysis = analysis;
@@ -3005,6 +3145,9 @@
         elements.inspectionDeflection.textContent = `y = ${formatSignedValue(deflection)} in`;
       }
 
+      document.querySelector(".workspace").addEventListener("input", clearCopyResultsStatus);
+      document.querySelector(".workspace").addEventListener("change", clearCopyResultsStatus);
+
       elements.spanRange.addEventListener("input", () => {
         setSpan(Number(elements.spanRange.value));
       });
@@ -3059,6 +3202,7 @@
       elements.addPoint.addEventListener("click", addPointLoad);
       elements.addUniform.addEventListener("click", addUniformLoad);
       elements.resetDefault.addEventListener("click", resetToDefault);
+      elements.copyResults.addEventListener("click", copyResults);
 
       for (const diagram of analysisDiagrams) {
         diagram.addEventListener("pointermove", event => {
