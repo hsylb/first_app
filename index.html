@@ -937,6 +937,11 @@
       background: var(--green-pale);
     }
 
+    .status.fail {
+      color: #a93d3d;
+      background: #fff0f0;
+    }
+
     .check-values {
       display: flex;
       justify-content: space-between;
@@ -979,6 +984,10 @@
     .meter .amber {
       width: 91.3%;
       background: var(--amber);
+    }
+
+    .meter .red {
+      background: var(--red);
     }
 
     .ratio-label {
@@ -1042,6 +1051,14 @@
       color: var(--green);
     }
 
+    .recommend-status.fail {
+      color: #a93d3d;
+    }
+
+    .recommend-status.fail svg {
+      color: var(--red);
+    }
+
     .primary-button,
     .secondary-button {
       min-height: 35px;
@@ -1055,6 +1072,11 @@
       background: var(--blue);
       color: white;
       box-shadow: 0 2px 5px rgb(40 116 208 / 18%);
+    }
+
+    .primary-button:disabled {
+      cursor: not-allowed;
+      opacity: .58;
     }
 
     .secondary-button {
@@ -1210,7 +1232,7 @@
     </div>
     <div class="topbar-right">
       <span class="screening-tag">Preliminary screening only</span>
-      <span class="draft-tag">Stage 3 · reactions, shear, and moment</span>
+      <span class="draft-tag">Stage 4 · deflection and checks</span>
     </div>
   </header>
 
@@ -1229,7 +1251,7 @@
         <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10 9v4M10 6.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
-      <span><strong>Stage 3 reactions, shear, and moment are calculated.</strong> Inputs update the beam model; deflection, section checks, and recommendation remain mock or pending.</span>
+      <span><strong>Stage 4 results are calculated.</strong> Reactions, shear, moment, deflection, section checks, and recommendation update from valid loads. Diagram inspection remains pending.</span>
     </div>
 
     <div class="workspace">
@@ -1361,8 +1383,8 @@
 
       <section class="results" aria-label="Beam results">
         <div class="results-notice" role="note">
-          <span class="plot-tag">Stage 3 calculations</span>
-          <span>Support reactions, shear, and moment update from valid loads. Deflection, section checks, the recommendation, and diagram inspection remain mock or pending.</span>
+          <span class="plot-tag">Stage 4 calculations</span>
+          <span>Reactions, shear, moment, deflection, section checks, and recommendation update from valid loads. Diagram inspection remains pending.</span>
         </div>
         <section class="card beam-card" aria-labelledby="beam-view-heading">
           <div class="card-heading">
@@ -1439,70 +1461,54 @@
               <h3 id="deflection-heading">Deflected shape</h3>
               <span class="plot-unit">y (in)</span>
             </div>
-            <span class="plot-tag">Mock plot</span>
+            <span class="plot-tag" id="deflection-tag">Calculated</span>
           </div>
-          <p class="plot-stat" id="deflection-stat">Default-example mock maximum: +0.609 in at x = 10 ft.</p>
-          <svg class="plot-svg" id="deflection-svg" viewBox="0 0 900 170" role="img" aria-label="Static default-example mock deflection shape">
+            <p class="plot-stat" id="deflection-stat" aria-live="polite">Maximum absolute deflection: +0.609 in at 10 ft.</p>
+            <svg class="plot-svg" id="deflection-svg" viewBox="0 0 900 170" role="img" aria-label="Calculated deflection diagram">
             <defs>
               <clipPath id="deflection-plot-clip">
                 <rect x="120" y="24" width="660" height="120"/>
               </clipPath>
             </defs>
-              <line x1="120" y1="40" x2="780" y2="40" class="zero-line"/>
-              <line x1="120" y1="88" x2="780" y2="88" class="gridline"/>
-              <line x1="120" y1="136" x2="780" y2="136" class="gridline"/>
-            <g class="gridline">
-                <line x1="120" y1="24" x2="120" y2="144"/>
-                <line x1="285" y1="24" x2="285" y2="144"/>
-                <line x1="450" y1="24" x2="450" y2="144"/>
-                <line x1="615" y1="24" x2="615" y2="144"/>
-                <line x1="780" y1="24" x2="780" y2="144"/>
-            </g>
-              <path d="M120 40 C230 138 670 138 780 40 L780 40Z" class="plot-fill-indigo" clip-path="url(#deflection-plot-clip)"/>
-              <path d="M120 40 C230 138 670 138 780 40" class="plot-line-indigo" clip-path="url(#deflection-plot-clip)"/>
-              <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
-              <circle cx="450" cy="114" r="4.5" class="plot-dot-indigo"/>
-              <text x="457" y="110" class="axis-label">+0.609</text>
+              <g id="deflection-grid"></g>
+              <path id="deflection-fill" class="plot-fill-indigo" clip-path="url(#deflection-plot-clip)"></path>
+              <path id="deflection-curve" class="plot-line-indigo" clip-path="url(#deflection-plot-clip)"></path>
+              <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
+              <g id="deflection-labels"></g>
           </svg>
           <div class="axis-foot" id="deflection-axis"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
-          <div class="crosshair-note" aria-label="Static mock crosshair preview from the default 20 ft example at 10 feet">
-            <span>Original 20-ft example · mock sample at <strong>x = 10 ft</strong></span>
-            <span>Mock V = 0.0 kips</span>
-            <span>Mock M = +50.0 kip-ft</span>
-            <span>Mock y = +0.609 in</span>
-          </div>
         </section>
 
         <div class="bottom-grid">
           <section class="card checks-card" aria-labelledby="checks-heading">
             <div class="card-heading">
               <h2 id="checks-heading">Section checks</h2>
-              <span class="plot-tag">Default mock · W12x26</span>
+              <span class="plot-tag" id="checks-tag">Calculated</span>
             </div>
             <div class="check-list">
-              <article class="check-item" title="Bending stress fb = maximum absolute moment × 12 / section modulus Sx. Passes when fb ≤ allowable Fb.">
+              <article class="check-item" id="bending-check" title="Bending stress fb = maximum absolute moment × 12 / section modulus Sx. Passes when fb ≤ allowable Fb.">
                 <div class="check-top">
                   <span class="check-title">Bending <span class="info" aria-label="Formula: maximum absolute moment times 12 divided by Sx">i</span></span>
-                  <span class="status pass">PASS</span>
+                  <span class="status pass" id="bending-status">PASS</span>
                 </div>
                 <div class="check-values">
-                  <span>Actual<strong>17.96 ksi</strong></span>
-                  <span class="allowable">Allowable<strong>30.00 ksi</strong></span>
+                  <span>Actual<strong id="bending-actual">17.96 ksi</strong></span>
+                  <span class="allowable">Allowable<strong id="bending-allowable">30.00 ksi</strong></span>
                 </div>
-                <div class="meter" role="img" aria-label="Bending ratio 59.9 percent, green"><span class="green"></span></div>
-                <div class="ratio-label"><span>Actual / allowable</span><strong>59.9%</strong></div>
+                <div class="meter" id="bending-meter" role="img" aria-label="Bending ratio 59.9 percent, green"><span class="green"></span></div>
+                <div class="ratio-label"><span>Actual / allowable</span><strong id="bending-ratio">59.9%</strong></div>
               </article>
-              <article class="check-item" title="Deflection check compares maximum absolute deflection with the selected span limit, here L/360.">
+              <article class="check-item" id="deflection-check" title="Deflection check compares maximum absolute deflection with the selected span limit.">
                 <div class="check-top">
                   <span class="check-title">Deflection <span class="info" aria-label="Formula: maximum absolute deflection compared with L divided by 360">i</span></span>
-                  <span class="status pass">PASS</span>
+                  <span class="status pass" id="deflection-status">PASS</span>
                 </div>
                 <div class="check-values">
-                  <span>Actual<strong>0.609 in</strong></span>
-                  <span class="allowable">Allowable<strong>0.667 in</strong></span>
+                  <span>Actual<strong id="deflection-actual">0.609 in</strong></span>
+                  <span class="allowable">Allowable<strong id="deflection-allowable">0.667 in</strong></span>
                 </div>
-                <div class="meter" role="img" aria-label="Deflection ratio 91.3 percent, amber"><span class="amber"></span></div>
-                <div class="ratio-label"><span>Actual / allowable</span><strong>91.3%</strong></div>
+                <div class="meter" id="deflection-meter" role="img" aria-label="Deflection ratio 91.3 percent, amber"><span class="amber"></span></div>
+                <div class="ratio-label"><span>Actual / allowable</span><strong id="deflection-ratio">91.3%</strong></div>
               </article>
             </div>
           </section>
@@ -1510,19 +1516,19 @@
           <section class="card recommend-card" aria-labelledby="recommend-heading">
             <div class="card-heading">
               <h2 id="recommend-heading">Section recommendation</h2>
-              <span class="plot-tag">Default-example mock</span>
+              <span class="plot-tag" id="recommend-tag">Calculated</span>
             </div>
-            <p class="recommend-kicker">Lightest listed section passing both checks</p>
-            <p class="recommend-name">W14x22</p>
-            <p class="recommend-detail">22 lb/ft · Ix 199 in⁴ · Sx 29.0 in³</p>
-            <p class="recommend-status">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <p class="recommend-kicker" id="recommend-kicker">Lightest listed section passing both checks</p>
+            <p class="recommend-name" id="recommend-name">W14x22</p>
+            <p class="recommend-detail" id="recommend-detail">22 lb/ft · Ix 199 in⁴ · Sx 29.0 in³</p>
+            <p class="recommend-status" id="recommend-status">
+              <svg id="recommend-status-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <circle cx="8" cy="8" r="7" fill="currentColor" opacity=".14"/>
                 <path d="m4.5 8.2 2.2 2.1 4.8-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Passes bending and deflection · illustrative
+              <span id="recommend-status-text">Passes bending and deflection</span>
             </p>
-            <button class="primary-button" type="button" aria-disabled="true">Use this section <span aria-hidden="true">→</span></button>
+            <button class="primary-button" id="recommend-button" type="button" aria-disabled="true" disabled>Use this section <span aria-hidden="true">→</span></button>
           </section>
         </div>
 
@@ -1633,9 +1639,34 @@
         momentAxis: document.getElementById("moment-axis"),
         momentTag: document.getElementById("moment-tag"),
         deflectionAxis: document.getElementById("deflection-axis"),
+        deflectionTag: document.getElementById("deflection-tag"),
         deflectionStat: document.getElementById("deflection-stat"),
         deflectionSvg: document.getElementById("deflection-svg"),
-        deflectionCrosshairNote: document.querySelector(".crosshair-note")
+        deflectionGrid: document.getElementById("deflection-grid"),
+        deflectionFill: document.getElementById("deflection-fill"),
+        deflectionCurve: document.getElementById("deflection-curve"),
+        deflectionLabels: document.getElementById("deflection-labels"),
+        checksTag: document.getElementById("checks-tag"),
+        bendingCheck: document.getElementById("bending-check"),
+        bendingStatus: document.getElementById("bending-status"),
+        bendingActual: document.getElementById("bending-actual"),
+        bendingAllowable: document.getElementById("bending-allowable"),
+        bendingMeter: document.getElementById("bending-meter"),
+        bendingRatio: document.getElementById("bending-ratio"),
+        deflectionCheck: document.getElementById("deflection-check"),
+        deflectionStatus: document.getElementById("deflection-status"),
+        deflectionActual: document.getElementById("deflection-actual"),
+        deflectionAllowable: document.getElementById("deflection-allowable"),
+        deflectionMeter: document.getElementById("deflection-meter"),
+        deflectionRatio: document.getElementById("deflection-ratio"),
+        recommendTag: document.getElementById("recommend-tag"),
+        recommendKicker: document.getElementById("recommend-kicker"),
+        recommendName: document.getElementById("recommend-name"),
+        recommendDetail: document.getElementById("recommend-detail"),
+        recommendStatus: document.getElementById("recommend-status"),
+        recommendStatusIcon: document.getElementById("recommend-status-icon"),
+        recommendStatusText: document.getElementById("recommend-status-text"),
+        recommendButton: document.getElementById("recommend-button")
       };
 
       function formatNumber(value, decimals = 2) {
@@ -1921,6 +1952,140 @@
         return analysis;
       }
 
+      function integrateMomentOnce(analysis, position) {
+        let integral = (analysis.support === "cantilever" ? -analysis.reactions.fixedMoment : 0)
+          * position + analysis.reactions.left * position * position / 2;
+        for (const load of analysis.points) {
+          const arm = Math.max(0, position - load.position);
+          integral -= load.magnitude * arm * arm / 2;
+        }
+        for (const load of analysis.uniform) {
+          const leftArm = Math.max(0, position - load.start);
+          const rightArm = Math.max(0, position - load.end);
+          integral -= load.magnitude * (leftArm ** 3 - rightArm ** 3) / 6;
+        }
+        return integral;
+      }
+
+      function integrateMomentTwice(analysis, position) {
+        let integral = (analysis.support === "cantilever" ? -analysis.reactions.fixedMoment : 0)
+          * position * position / 2
+          + analysis.reactions.left * position ** 3 / 6;
+        for (const load of analysis.points) {
+          const arm = Math.max(0, position - load.position);
+          integral -= load.magnitude * arm ** 3 / 6;
+        }
+        for (const load of analysis.uniform) {
+          const leftArm = Math.max(0, position - load.start);
+          const rightArm = Math.max(0, position - load.end);
+          integral -= load.magnitude * (leftArm ** 4 - rightArm ** 4) / 24;
+        }
+        return integral;
+      }
+
+      function findSlopeStationaryPositions(analysis, slopeAt) {
+        const positions = [];
+        // Downward-only loads make slope monotonic on each interval between breakpoints.
+        for (let index = 0; index < analysis.breakpoints.length - 1; index += 1) {
+          let low = analysis.breakpoints[index];
+          let high = analysis.breakpoints[index + 1];
+          let lowSlope = slopeAt(low);
+          const highSlope = slopeAt(high);
+          if (lowSlope === 0 || highSlope === 0 || Math.sign(lowSlope) === Math.sign(highSlope)) {
+            continue;
+          }
+
+          for (let iteration = 0; iteration < 60; iteration += 1) {
+            const middle = (low + high) / 2;
+            const middleSlope = slopeAt(middle);
+            if (middleSlope === 0) {
+              low = middle;
+              high = middle;
+              break;
+            }
+            if (Math.sign(middleSlope) === Math.sign(lowSlope)) {
+              low = middle;
+              lowSlope = middleSlope;
+            } else {
+              high = middle;
+            }
+          }
+          positions.push((low + high) / 2);
+        }
+        return uniqueSortedPositions(positions);
+      }
+
+      function calculateDeflectionResponse(analysis, section, material) {
+        const stiffness = material.modulus * section.ix;
+        // 12^3 converts the double integration over ft and M in kip-ft to inches.
+        const curvatureScale = 1728 / stiffness;
+        const initialSlope = analysis.support === "simple"
+          ? curvatureScale * integrateMomentTwice(analysis, analysis.span) / analysis.span
+          : 0;
+        const slopeAt = position =>
+          initialSlope - curvatureScale * integrateMomentOnce(analysis, position);
+        const deflectionAt = position =>
+          initialSlope * position - curvatureScale * integrateMomentTwice(analysis, position);
+        const stationaryPositions = findSlopeStationaryPositions(analysis, slopeAt);
+        const extremaPositions = uniqueSortedPositions([
+          ...analysis.breakpoints,
+          ...stationaryPositions
+        ]);
+        const extrema = collectAbsoluteExtrema(extremaPositions.map(position => ({
+          position,
+          value: deflectionAt(position)
+        })));
+        const samplePositions = uniqueSortedPositions([
+          ...analysis.samplePositions,
+          ...stationaryPositions,
+          ...extrema.points.map(point => point.position)
+        ]);
+        const samples = samplePositions.map(position => ({
+          position,
+          value: deflectionAt(position)
+        }));
+        return { extrema, samples };
+      }
+
+      function evaluateSection(analysis, section, material) {
+        const bendingActual = analysis.momentExtrema.maximum * 12 / section.sx;
+        const deflection = calculateDeflectionResponse(analysis, section, material);
+        const deflectionAllowable = analysis.span * 12 / state.deflectionLimit;
+        const deflectionActual = deflection.extrema.maximum;
+        const bendingPass = bendingActual <= material.allowable;
+        const deflectionPass = deflectionActual <= deflectionAllowable;
+        return {
+          section,
+          bending: {
+            actual: bendingActual,
+            allowable: material.allowable,
+            passes: bendingPass
+          },
+          deflection: {
+            actual: deflectionActual,
+            allowable: deflectionAllowable,
+            passes: deflectionPass,
+            response: deflection
+          },
+          passes: bendingPass && deflectionPass
+        };
+      }
+
+      function calculateStage4Results(analysis) {
+        const material = materials[state.material];
+        const sections = material.sections.map(section =>
+          evaluateSection(analysis, section, material)
+        );
+        const selected = sections.find(result => result.section.name === state.section);
+        const passing = sections.filter(result => result.passes);
+        const recommendation = state.material === "steel"
+          ? passing.sort((left, right) =>
+            left.section.weight - right.section.weight || right.section.ix - left.section.ix
+          )[0] || null
+          : passing[0] || null;
+        return { material, selected, recommendation };
+      }
+
       function formatSignedValue(value, decimals = 2) {
         if (Math.abs(value) <= analysisEpsilon) return (0).toFixed(decimals);
         const sign = value < 0 ? "−" : "+";
@@ -1937,28 +2102,28 @@
         return `Maximum absolute ${name}: ${extrema.maximum.toFixed(2)} ${unit} (${locations.join("; ")}).`;
       }
 
-      function plotY(value, maximum) {
+      function plotY(value, maximum, positiveDown = false) {
         const scale = maximum > analysisEpsilon ? 48 / maximum : 0;
-        return 86 - value * scale;
+        return 86 + value * scale * (positiveDown ? 1 : -1);
       }
 
-      function buildPlotCurve(samples, maximum) {
+      function buildPlotCurve(samples, maximum, positiveDown = false) {
         if (samples.length === 0) return "";
         return samples.map((sample, index) => {
           const x = beamX(sample.position).toFixed(3);
-          const y = plotY(sample.value, maximum).toFixed(3);
+          const y = plotY(sample.value, maximum, positiveDown).toFixed(3);
           return `${index === 0 ? "M" : "L"}${x} ${y}`;
         }).join(" ");
       }
 
-      function buildSignedArea(samples, maximum) {
+      function buildSignedArea(samples, maximum, positiveDown = false) {
         const commands = [];
         const appendPolygon = (x1, value1, x2, value2) => {
           if (Math.abs(x2 - x1) <= analysisEpsilon) return;
           commands.push(
             `M${x1.toFixed(3)} 86`,
-            `L${x1.toFixed(3)} ${plotY(value1, maximum).toFixed(3)}`,
-            `L${x2.toFixed(3)} ${plotY(value2, maximum).toFixed(3)}`,
+            `L${x1.toFixed(3)} ${plotY(value1, maximum, positiveDown).toFixed(3)}`,
+            `L${x2.toFixed(3)} ${plotY(value2, maximum, positiveDown).toFixed(3)}`,
             `L${x2.toFixed(3)} 86Z`
           );
         };
@@ -2008,13 +2173,19 @@
         });
       }
 
-      function renderPlotValueLabels(parent, maximum) {
+      function renderPlotValueLabels(parent, maximum, positiveDown = false) {
         parent.replaceChildren();
-        const values = [
-          { value: maximum, y: 34 },
-          { value: 0, y: 82 },
-          { value: -maximum, y: 139 }
-        ];
+        const values = positiveDown
+          ? [
+            { value: -maximum, y: 34 },
+            { value: 0, y: 82 },
+            { value: maximum, y: 139 }
+          ]
+          : [
+            { value: maximum, y: 34 },
+            { value: 0, y: 82 },
+            { value: -maximum, y: 139 }
+          ];
         values.forEach(({ value, y }) => {
           makeSvgElement(parent, "text", {
             x: 114,
@@ -2047,17 +2218,99 @@
           "aria-label",
           `Calculated bending moment diagram for a ${formatNumber(analysis.span, 3)} ft ${analysis.support === "simple" ? "simply supported beam" : "cantilever"}; ${elements.momentStat.textContent}`
         );
-        renderAxisTicks(elements.deflectionAxis, analysis.span);
-        elements.deflectionStat.textContent =
-          "Original 20-ft, 1-kip/ft example: mock maximum +0.609 in at x = 10 ft. Not current-beam data; axis follows current span for alignment only.";
+      }
+
+      function renderDeflectionPlot(analysis, response) {
+        const maximum = response.extrema.maximum;
+        elements.deflectionFill.setAttribute("d", buildSignedArea(response.samples, maximum, true));
+        elements.deflectionCurve.setAttribute("d", buildPlotCurve(response.samples, maximum, true));
+        renderPlotGrid(elements.deflectionGrid, elements.deflectionAxis, analysis.span);
+        renderPlotValueLabels(elements.deflectionLabels, maximum, true);
+        elements.deflectionTag.textContent = "Calculated";
+        elements.deflectionStat.textContent = formatExtremaStat("deflection", "in", response.extrema);
         elements.deflectionSvg.setAttribute(
           "aria-label",
-          `Static mock deflection from the original 20-ft, 1-kip/ft example, with +0.609 in at x = 10 ft. The axis follows the current ${formatNumber(analysis.span, 3)} ft span for alignment only; these values are not calculated for the current beam.`
+          `Calculated deflection diagram for a ${formatNumber(analysis.span, 3)} ft ${analysis.support === "simple" ? "simply supported beam" : "cantilever"}; ${elements.deflectionStat.textContent}`
         );
-        elements.deflectionCrosshairNote.setAttribute(
+      }
+
+      function renderCheck(status, actual, allowable, meter, ratioLabel, name, actualValue, allowableValue, unit, passes) {
+        const ratio = actualValue / allowableValue;
+        const percentage = ratio * 100;
+        const color = ratio < 0.7 ? "green" : ratio <= 1 ? "amber" : "red";
+        status.className = `status ${passes ? "pass" : "fail"}`;
+        status.textContent = passes ? "PASS" : "FAIL";
+        actual.textContent = `${actualValue.toFixed(2)} ${unit}`;
+        allowable.textContent = `${allowableValue.toFixed(2)} ${unit}`;
+        const meterFill = meter.firstElementChild;
+        meterFill.className = color;
+        meterFill.style.width = `${Math.min(100, percentage)}%`;
+        meter.setAttribute("aria-label", `${name} ratio ${percentage.toFixed(1)} percent, ${color}`);
+        ratioLabel.textContent = `${percentage.toFixed(1)}%`;
+      }
+
+      function renderSectionChecks(results) {
+        const { section, bending, deflection } = results.selected;
+        elements.checksTag.textContent = `Selected · ${section.name}`;
+        renderCheck(
+          elements.bendingStatus,
+          elements.bendingActual,
+          elements.bendingAllowable,
+          elements.bendingMeter,
+          elements.bendingRatio,
+          "Bending",
+          bending.actual,
+          bending.allowable,
+          "ksi",
+          bending.passes
+        );
+        renderCheck(
+          elements.deflectionStatus,
+          elements.deflectionActual,
+          elements.deflectionAllowable,
+          elements.deflectionMeter,
+          elements.deflectionRatio,
+          "Deflection",
+          deflection.actual,
+          deflection.allowable,
+          "in",
+          deflection.passes
+        );
+        elements.deflectionCheck.title =
+          `Deflection check compares maximum absolute deflection with L/${state.deflectionLimit}. Passes when actual is less than or equal to allowable.`;
+        elements.deflectionCheck.querySelector(".info").setAttribute(
           "aria-label",
-          "Static mock V, M, and deflection values from the original 20-ft, 1-kip/ft example at x = 10 ft; not calculated for the current beam"
+          `Formula: maximum absolute deflection compared with L divided by ${state.deflectionLimit}`
         );
+      }
+
+      function renderRecommendation(results) {
+        const recommendation = results.recommendation;
+        elements.recommendStatus.classList.toggle("fail", !recommendation);
+        elements.recommendStatusIcon.hidden = !recommendation;
+        elements.recommendTag.textContent = recommendation ? "Calculated" : "No passing section";
+        elements.recommendKicker.textContent = recommendation
+          ? "Lightest listed section passing both checks"
+          : "No listed section in the selected material passes both checks.";
+        elements.recommendName.hidden = !recommendation;
+        elements.recommendDetail.hidden = !recommendation;
+        elements.recommendButton.hidden = !recommendation;
+        elements.recommendButton.disabled = true;
+        elements.recommendButton.setAttribute("aria-disabled", "true");
+
+        if (!recommendation) {
+          elements.recommendName.textContent = "";
+          elements.recommendDetail.textContent = "";
+          elements.recommendStatusText.textContent = "Adjust the beam or loads and check again.";
+          return;
+        }
+
+        const section = recommendation.section;
+        elements.recommendName.textContent = section.name;
+        elements.recommendDetail.textContent = section.weight === undefined
+          ? `Ix ${formatNumber(section.ix, 2)} in⁴ · Sx ${formatNumber(section.sx, 2)} in³`
+          : `${formatNumber(section.weight, 0)} lb/ft · Ix ${formatNumber(section.ix, 2)} in⁴ · Sx ${formatNumber(section.sx, 2)} in³`;
+        elements.recommendStatusText.textContent = "Passes bending and deflection";
       }
 
       function setReactionLabel(element, symbol, subscriptValue, value, unit, suffix = "") {
@@ -2321,6 +2574,7 @@
 
       function renderBeam() {
         const analysis = calculateBeamResponse();
+        const sectionResults = calculateStage4Results(analysis);
         const layout = getBeamLayout();
         elements.beamSvg.setAttribute("viewBox", `0 0 900 ${layout.viewHeight}`);
         elements.beamElements.replaceChildren();
@@ -2364,6 +2618,9 @@
         }, `${formatNumber(state.span, 3)} ft`);
         renderReactions(analysis);
         renderShearAndMomentPlots(analysis);
+        renderDeflectionPlot(analysis, sectionResults.selected.deflection.response);
+        renderSectionChecks(sectionResults);
+        renderRecommendation(sectionResults);
         updateBeamDescription();
       }
 
@@ -2385,7 +2642,7 @@
           ? `Simply supported beam, ${formatNumber(state.span, 3)} feet`
           : `Cantilever beam fixed at left, ${formatNumber(state.span, 3)} feet`;
         elements.beamDesc.textContent =
-          `Input preview of a ${supportDescription}. ${pointLabel} and ${uniformLabel} are shown. Support reactions, shear, and moment are calculated from valid loads; deflection and section checks remain mock values.`;
+          `Input preview of a ${supportDescription}. ${pointLabel} and ${uniformLabel} are shown. Reactions, shear, moment, deflection, and section checks are calculated from valid loads.`;
       }
 
       function createField(load, kind, fieldName, labelText, value, options = {}) {
@@ -2692,6 +2949,7 @@
       });
       elements.deflectionLimit.addEventListener("change", () => {
         state.deflectionLimit = Number(elements.deflectionLimit.value);
+        renderBeam();
       });
 
       elements.pointList.addEventListener("input", event => {
