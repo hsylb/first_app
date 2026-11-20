@@ -580,6 +580,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 8px;
       margin: 10px 0 2px;
     }
@@ -1153,6 +1154,10 @@
         font-size: 8px;
       }
 
+      .topbar .draft-tag {
+        display: none;
+      }
+
       .page {
         padding-right: 11px;
         padding-left: 11px;
@@ -1190,12 +1195,6 @@
         gap: 11px;
       }
     }
-
-    @media (max-width: 360px) {
-      .topbar .draft-tag {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
@@ -1211,7 +1210,7 @@
     </div>
     <div class="topbar-right">
       <span class="screening-tag">Preliminary screening only</span>
-      <span class="draft-tag">Interactive inputs · mock results</span>
+      <span class="draft-tag">Stage 3 · reactions, shear, and moment</span>
     </div>
   </header>
 
@@ -1230,7 +1229,7 @@
         <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10 9v4M10 6.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
-      <span><strong>Stage 2 inputs are interactive.</strong> The beam drawing follows your inputs; all engineering results remain static mock values and do not update.</span>
+      <span><strong>Stage 3 reactions, shear, and moment are calculated.</strong> Inputs update the beam model; deflection, section checks, and recommendation remain mock or pending.</span>
     </div>
 
     <div class="workspace">
@@ -1362,8 +1361,8 @@
 
       <section class="results" aria-label="Beam results">
         <div class="results-notice" role="note">
-          <span class="plot-tag">Mock results</span>
-          <span>Reactions, all three diagrams, check cards, and the section recommendation remain fixed to the default example; they are not recalculated for the current inputs.</span>
+          <span class="plot-tag">Stage 3 calculations</span>
+          <span>Support reactions, shear, and moment update from valid loads. Deflection, section checks, the recommendation, and diagram inspection remain mock or pending.</span>
         </div>
         <section class="card beam-card" aria-labelledby="beam-view-heading">
           <div class="card-heading">
@@ -1373,10 +1372,10 @@
             </div>
             <span class="plot-tag">Current input preview</span>
           </div>
-          <div class="reaction-caption">Default-example mock reactions only</div>
-          <div class="reaction-summary" aria-label="Default-example mock support reactions">
-            <span>R<sub>A</sub> = 10 kips</span>
-            <span>R<sub>B</sub> = 10 kips</span>
+          <div class="reaction-caption" id="reaction-caption">Calculated support reactions</div>
+          <div class="reaction-summary" id="reaction-summary" aria-label="Calculated support reactions" aria-live="polite">
+            <span id="reaction-left">R<sub>A</sub> = 10.00 kips</span>
+            <span id="reaction-right">R<sub>B</sub> = 10.00 kips</span>
           </div>
           <svg class="beam-svg" id="beam-svg" viewBox="0 0 900 190" role="img" aria-labelledby="beam-title beam-desc">
             <title id="beam-title">Simply supported 20-foot beam with a full-span uniform load</title>
@@ -1402,29 +1401,17 @@
               <h3 id="shear-heading">Shear force</h3>
               <span class="plot-unit">V (kips)</span>
             </div>
-            <span class="plot-tag">Mock plot</span>
+            <span class="plot-tag" id="shear-tag">Calculated</span>
           </div>
-          <p class="plot-stat">Largest absolute values: <strong>+10.0 k</strong> at <strong>0 ft</strong> and <strong>−10.0 k</strong> at <strong>20 ft</strong></p>
-          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static shear diagram, decreasing linearly from plus 10 kips at zero feet to minus 10 kips at 20 feet">
-            <line x1="120" y1="30" x2="780" y2="30" class="gridline"/>
+          <p class="plot-stat" id="shear-stat" aria-live="polite">Maximum absolute shear: +10.00 kips at 0.00 ft and −10.00 kips at 20.00 ft.</p>
+          <svg class="plot-svg" id="shear-svg" viewBox="0 0 900 170" role="img" aria-label="Calculated shear force diagram">
+            <g id="shear-grid"></g>
+            <path id="shear-fill" class="plot-fill-blue"></path>
+            <path id="shear-curve" class="plot-line-blue"></path>
             <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
-            <line x1="120" y1="142" x2="780" y2="142" class="gridline"/>
-            <g class="gridline">
-              <line x1="120" y1="24" x2="120" y2="148"/>
-              <line x1="285" y1="24" x2="285" y2="148"/>
-              <line x1="450" y1="24" x2="450" y2="148"/>
-              <line x1="615" y1="24" x2="615" y2="148"/>
-              <line x1="780" y1="24" x2="780" y2="148"/>
-            </g>
-            <path d="M120 86 120 30 780 142 780 86Z" class="plot-fill-blue"/>
-            <path d="M120 30 780 142" class="plot-line-blue"/>
-            <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
-            <circle cx="450" cy="86" r="4.5" class="plot-dot-blue"/>
-            <text x="126" y="25" class="axis-label">+10</text>
-            <text x="126" y="138" class="axis-label">−10</text>
-            <text x="457" y="80" class="axis-label">0</text>
+            <g id="shear-labels"></g>
           </svg>
-          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+          <div class="axis-foot" id="shear-axis"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
         </section>
 
         <section class="card plot-card" aria-labelledby="moment-heading">
@@ -1433,27 +1420,17 @@
               <h3 id="moment-heading">Bending moment</h3>
               <span class="plot-unit">M (kip-ft)</span>
             </div>
-            <span class="plot-tag">Mock plot</span>
+            <span class="plot-tag" id="moment-tag">Calculated</span>
           </div>
-          <p class="plot-stat">Largest absolute value: <strong>+50.0 kip-ft</strong> at <strong>x = 10 ft</strong></p>
-          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static moment diagram, a positive parabola with a maximum of 50 kip-feet at midspan">
-            <line x1="120" y1="30" x2="780" y2="30" class="gridline"/>
-            <line x1="120" y1="85" x2="780" y2="85" class="gridline"/>
-            <line x1="120" y1="140" x2="780" y2="140" class="zero-line"/>
-            <g class="gridline">
-              <line x1="120" y1="24" x2="120" y2="146"/>
-              <line x1="285" y1="24" x2="285" y2="146"/>
-              <line x1="450" y1="24" x2="450" y2="146"/>
-              <line x1="615" y1="24" x2="615" y2="146"/>
-              <line x1="780" y1="24" x2="780" y2="146"/>
-            </g>
-            <path d="M120 140 Q450 -80 780 140 L780 140Z" class="plot-fill-teal"/>
-            <path d="M120 140 Q450 -80 780 140" class="plot-line-teal"/>
-            <line x1="450" y1="20" x2="450" y2="148" class="crosshair"/>
-            <circle cx="450" cy="30" r="4.5" class="plot-dot-teal"/>
-            <text x="457" y="25" class="axis-label">+50</text>
+          <p class="plot-stat" id="moment-stat" aria-live="polite">Maximum absolute moment: +50.00 kip-ft at 10.00 ft.</p>
+          <svg class="plot-svg" id="moment-svg" viewBox="0 0 900 170" role="img" aria-label="Calculated bending moment diagram">
+            <g id="moment-grid"></g>
+            <path id="moment-fill" class="plot-fill-teal"></path>
+            <path id="moment-curve" class="plot-line-teal"></path>
+            <line x1="120" y1="86" x2="780" y2="86" class="zero-line"/>
+            <g id="moment-labels"></g>
           </svg>
-          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+          <div class="axis-foot" id="moment-axis"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
         </section>
 
         <section class="card plot-card" aria-labelledby="deflection-heading">
@@ -1464,8 +1441,8 @@
             </div>
             <span class="plot-tag">Mock plot</span>
           </div>
-          <p class="plot-stat">Largest absolute value: <strong>+0.609 in</strong> at <strong>x = 10 ft</strong></p>
-          <svg class="plot-svg" viewBox="0 0 900 170" role="img" aria-label="Static deflection shape, curving downward to 0.609 inches at midspan">
+          <p class="plot-stat" id="deflection-stat">Default-example mock maximum: +0.609 in at x = 10 ft.</p>
+          <svg class="plot-svg" id="deflection-svg" viewBox="0 0 900 170" role="img" aria-label="Static default-example mock deflection shape">
             <defs>
               <clipPath id="deflection-plot-clip">
                 <rect x="120" y="24" width="660" height="120"/>
@@ -1487,12 +1464,12 @@
               <circle cx="450" cy="114" r="4.5" class="plot-dot-indigo"/>
               <text x="457" y="110" class="axis-label">+0.609</text>
           </svg>
-          <div class="axis-foot"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
-          <div class="crosshair-note" aria-label="Static crosshair preview at 10 feet">
-            <span>At <strong>x = 10 ft</strong></span>
-            <span>V = 0.0 k</span>
-            <span>M = +50.0 kip-ft</span>
-            <span>y = +0.609 in</span>
+          <div class="axis-foot" id="deflection-axis"><span>0 ft</span><span>5 ft</span><span>10 ft</span><span>15 ft</span><span>20 ft</span></div>
+          <div class="crosshair-note" aria-label="Static mock crosshair preview from the default 20 ft example at 10 feet">
+            <span>Original 20-ft example · mock sample at <strong>x = 10 ft</strong></span>
+            <span>Mock V = 0.0 kips</span>
+            <span>Mock M = +50.0 kip-ft</span>
+            <span>Mock y = +0.609 in</span>
           </div>
         </section>
 
@@ -1624,6 +1601,10 @@
         beamTitle: document.getElementById("beam-title"),
         beamDesc: document.getElementById("beam-desc"),
         beamSubtitle: document.getElementById("beam-subtitle"),
+        reactionCaption: document.getElementById("reaction-caption"),
+        reactionSummary: document.getElementById("reaction-summary"),
+        reactionLeft: document.getElementById("reaction-left"),
+        reactionRight: document.getElementById("reaction-right"),
         spanSummary: document.getElementById("span-summary"),
         selectedProperties: document.getElementById("selected-properties"),
         selectedMaterial: document.getElementById("selected-material-value"),
@@ -1634,7 +1615,27 @@
         propertyFb: document.getElementById("property-fb"),
         propertyWeight: document.getElementById("property-weight"),
         materialProperties: document.getElementById("material-properties"),
-        otherMaterial: document.getElementById("other-material-reference")
+        otherMaterial: document.getElementById("other-material-reference"),
+        shearStat: document.getElementById("shear-stat"),
+        shearSvg: document.getElementById("shear-svg"),
+        shearGrid: document.getElementById("shear-grid"),
+        shearFill: document.getElementById("shear-fill"),
+        shearCurve: document.getElementById("shear-curve"),
+        shearLabels: document.getElementById("shear-labels"),
+        shearAxis: document.getElementById("shear-axis"),
+        shearTag: document.getElementById("shear-tag"),
+        momentStat: document.getElementById("moment-stat"),
+        momentSvg: document.getElementById("moment-svg"),
+        momentGrid: document.getElementById("moment-grid"),
+        momentFill: document.getElementById("moment-fill"),
+        momentCurve: document.getElementById("moment-curve"),
+        momentLabels: document.getElementById("moment-labels"),
+        momentAxis: document.getElementById("moment-axis"),
+        momentTag: document.getElementById("moment-tag"),
+        deflectionAxis: document.getElementById("deflection-axis"),
+        deflectionStat: document.getElementById("deflection-stat"),
+        deflectionSvg: document.getElementById("deflection-svg"),
+        deflectionCrosshairNote: document.querySelector(".crosshair-note")
       };
 
       function formatNumber(value, decimals = 2) {
@@ -1690,6 +1691,417 @@
         return beamStart + (position / state.span) * beamWidth;
       }
 
+      const analysisEpsilon = 1e-9;
+
+      function collectAnalysisLoads() {
+        const points = state.pointLoads
+          .filter(load => load.valid)
+          .map(load => ({ magnitude: load.magnitude, position: load.position }));
+        const uniform = state.uniformLoads
+          .filter(load => load.valid)
+          .map(load => ({
+            magnitude: load.magnitude,
+            start: Math.max(0, load.start),
+            end: Math.min(state.span, load.end)
+          }))
+          .filter(load => load.end > load.start);
+        return { points, uniform };
+      }
+
+      function calculateReactions(loads, span, support) {
+        const pointTotal = loads.points.reduce((sum, load) => sum + load.magnitude, 0);
+        const uniformTotal = loads.uniform.reduce(
+          (sum, load) => sum + load.magnitude * (load.end - load.start),
+          0
+        );
+        const totalLoad = pointTotal + uniformTotal;
+        const momentAboutLeft = loads.points.reduce(
+          (sum, load) => sum + load.magnitude * load.position,
+          0
+        ) + loads.uniform.reduce((sum, load) => {
+          const resultant = load.magnitude * (load.end - load.start);
+          return sum + resultant * (load.start + load.end) / 2;
+        }, 0);
+
+        if (support === "cantilever") {
+          return {
+            left: totalLoad,
+            right: 0,
+            fixedMoment: momentAboutLeft,
+            totalLoad
+          };
+        }
+
+        const right = momentAboutLeft / span;
+        return {
+          left: totalLoad - right,
+          right,
+          fixedMoment: 0,
+          totalLoad
+        };
+      }
+
+      function calculateShearAt(analysis, position, side = "right") {
+        let shear = analysis.reactions.left;
+        for (const load of analysis.points) {
+          const before = load.position < position - analysisEpsilon;
+          const at = Math.abs(load.position - position) <= analysisEpsilon;
+          if (before || (side === "right" && at)) shear -= load.magnitude;
+        }
+        for (const load of analysis.uniform) {
+          const loadedLength = Math.max(0, Math.min(position, load.end) - load.start);
+          shear -= load.magnitude * loadedLength;
+        }
+        return shear;
+      }
+
+      function calculateMomentAt(analysis, position) {
+        let moment = (analysis.support === "cantilever" ? -analysis.reactions.fixedMoment : 0)
+          + analysis.reactions.left * position;
+        for (const load of analysis.points) {
+          moment -= load.magnitude * Math.max(0, position - load.position);
+        }
+        for (const load of analysis.uniform) {
+          const leftArm = Math.max(0, position - load.start);
+          const rightArm = Math.max(0, position - load.end);
+          moment -= load.magnitude * (leftArm * leftArm - rightArm * rightArm) / 2;
+        }
+        return moment;
+      }
+
+      function uniqueSortedPositions(values) {
+        const sorted = values.slice().sort((left, right) => left - right);
+        return sorted.filter((value, index) =>
+          index === 0 || Math.abs(value - sorted[index - 1]) > analysisEpsilon
+        );
+      }
+
+      function calculateBreakpoints(analysis) {
+        return uniqueSortedPositions([
+          0,
+          analysis.span,
+          ...analysis.points.map(load => load.position),
+          ...analysis.uniform.flatMap(load => [load.start, load.end])
+        ]);
+      }
+
+      function collectAbsoluteExtrema(candidates) {
+        const maximum = candidates.reduce(
+          (value, candidate) => Math.max(value, Math.abs(candidate.value)),
+          0
+        );
+        if (maximum <= analysisEpsilon) return { maximum: 0, points: [] };
+        const tolerance = Math.max(1, maximum) * 1e-9;
+        const points = candidates.filter(candidate =>
+          Math.abs(Math.abs(candidate.value) - maximum) <= tolerance
+        );
+        const uniquePoints = points.filter((candidate, index) =>
+          points.findIndex(other =>
+            Math.abs(other.position - candidate.position) <= analysisEpsilon
+            && Math.abs(other.value - candidate.value) <= tolerance
+          ) === index
+        );
+        return { maximum, points: uniquePoints };
+      }
+
+      function calculateShearExtrema(analysis) {
+        const candidates = [];
+        for (const position of analysis.breakpoints) {
+          if (position <= analysisEpsilon) {
+            candidates.push({ position, value: calculateShearAt(analysis, position, "right") });
+          } else if (position >= analysis.span - analysisEpsilon) {
+            candidates.push({ position, value: calculateShearAt(analysis, position, "left") });
+          } else {
+            candidates.push(
+              { position, value: calculateShearAt(analysis, position, "left") },
+              { position, value: calculateShearAt(analysis, position, "right") }
+            );
+          }
+        }
+        return collectAbsoluteExtrema(candidates);
+      }
+
+      function distributedIntensityAt(analysis, position) {
+        return analysis.uniform.reduce((sum, load) =>
+          position >= load.start && position < load.end
+            ? sum + load.magnitude
+            : sum,
+        0);
+      }
+
+      function calculateMomentExtrema(analysis) {
+        const candidates = analysis.breakpoints.map(position => ({
+          position,
+          value: calculateMomentAt(analysis, position)
+        }));
+        const stationaryPoints = [];
+
+        for (let index = 0; index < analysis.breakpoints.length - 1; index += 1) {
+          const start = analysis.breakpoints[index];
+          const end = analysis.breakpoints[index + 1];
+          const intensity = distributedIntensityAt(analysis, (start + end) / 2);
+          if (intensity <= analysisEpsilon) continue;
+          const shearAtStart = calculateShearAt(analysis, start, "right");
+          const stationary = start + shearAtStart / intensity;
+          if (stationary > start + analysisEpsilon && stationary < end - analysisEpsilon) {
+            const point = {
+              position: stationary,
+              value: calculateMomentAt(analysis, stationary)
+            };
+            candidates.push(point);
+            stationaryPoints.push(point);
+          }
+        }
+        return { ...collectAbsoluteExtrema(candidates), stationaryPoints };
+      }
+
+      function buildAnalysisPositions(analysis) {
+        const positions = analysis.breakpoints.slice();
+        for (let position = 1; position < analysis.span; position += 1) {
+          positions.push(position);
+        }
+        return uniqueSortedPositions(positions);
+      }
+
+      function hasPointLoadAt(analysis, position) {
+        return analysis.points.some(load =>
+          Math.abs(load.position - position) <= analysisEpsilon
+        );
+      }
+
+      function buildShearSamples(analysis) {
+        const samples = [];
+        const positions = uniqueSortedPositions([
+          ...analysis.samplePositions,
+          ...analysis.shearExtrema.points.map(point => point.position)
+        ]);
+        for (const position of positions) {
+          if (position <= analysisEpsilon) {
+            samples.push({ position, value: calculateShearAt(analysis, position, "right") });
+          } else if (position >= analysis.span - analysisEpsilon) {
+            samples.push({ position, value: calculateShearAt(analysis, position, "left") });
+            if (hasPointLoadAt(analysis, position)) {
+              samples.push({ position, value: calculateShearAt(analysis, position, "right") });
+            }
+            samples.push({ position, value: 0 });
+          } else if (hasPointLoadAt(analysis, position)) {
+            samples.push(
+              { position, value: calculateShearAt(analysis, position, "left") },
+              { position, value: calculateShearAt(analysis, position, "right") }
+            );
+          } else {
+            samples.push({ position, value: calculateShearAt(analysis, position, "right") });
+          }
+        }
+        return samples;
+      }
+
+      function calculateBeamResponse() {
+        const loads = collectAnalysisLoads();
+        const analysis = {
+          span: state.span,
+          support: state.support,
+          ...loads,
+          reactions: calculateReactions(loads, state.span, state.support)
+        };
+        analysis.breakpoints = calculateBreakpoints(analysis);
+        analysis.samplePositions = buildAnalysisPositions(analysis);
+        analysis.shearExtrema = calculateShearExtrema(analysis);
+        analysis.momentExtrema = calculateMomentExtrema(analysis);
+        analysis.shearSamples = buildShearSamples(analysis);
+        const momentPositions = uniqueSortedPositions([
+          ...analysis.samplePositions,
+          ...analysis.momentExtrema.stationaryPoints.map(point => point.position),
+          ...analysis.momentExtrema.points.map(point => point.position)
+        ]);
+        analysis.momentSamples = momentPositions.map(position => ({
+          position,
+          value: calculateMomentAt(analysis, position)
+        }));
+        return analysis;
+      }
+
+      function formatSignedValue(value, decimals = 2) {
+        if (Math.abs(value) <= analysisEpsilon) return (0).toFixed(decimals);
+        const sign = value < 0 ? "−" : "+";
+        return `${sign}${Math.abs(value).toFixed(decimals)}`;
+      }
+
+      function formatExtremaStat(name, unit, extrema) {
+        if (extrema.maximum <= analysisEpsilon) {
+          return `Maximum absolute ${name}: 0.00 ${unit} throughout the span.`;
+        }
+        const locations = extrema.points.map(point =>
+          `${formatSignedValue(point.value)} ${unit} at ${formatNumber(point.position, 2)} ft`
+        );
+        return `Maximum absolute ${name}: ${extrema.maximum.toFixed(2)} ${unit} (${locations.join("; ")}).`;
+      }
+
+      function plotY(value, maximum) {
+        const scale = maximum > analysisEpsilon ? 48 / maximum : 0;
+        return 86 - value * scale;
+      }
+
+      function buildPlotCurve(samples, maximum) {
+        if (samples.length === 0) return "";
+        return samples.map((sample, index) => {
+          const x = beamX(sample.position).toFixed(3);
+          const y = plotY(sample.value, maximum).toFixed(3);
+          return `${index === 0 ? "M" : "L"}${x} ${y}`;
+        }).join(" ");
+      }
+
+      function buildSignedArea(samples, maximum) {
+        const commands = [];
+        const appendPolygon = (x1, value1, x2, value2) => {
+          if (Math.abs(x2 - x1) <= analysisEpsilon) return;
+          commands.push(
+            `M${x1.toFixed(3)} 86`,
+            `L${x1.toFixed(3)} ${plotY(value1, maximum).toFixed(3)}`,
+            `L${x2.toFixed(3)} ${plotY(value2, maximum).toFixed(3)}`,
+            `L${x2.toFixed(3)} 86Z`
+          );
+        };
+
+        for (let index = 0; index < samples.length - 1; index += 1) {
+          const first = samples[index];
+          const second = samples[index + 1];
+          const x1 = beamX(first.position);
+          const x2 = beamX(second.position);
+          if (first.value * second.value < 0) {
+            const fraction = first.value / (first.value - second.value);
+            const crossing = x1 + (x2 - x1) * fraction;
+            appendPolygon(x1, first.value, crossing, 0);
+            appendPolygon(crossing, 0, x2, second.value);
+          } else {
+            appendPolygon(x1, first.value, x2, second.value);
+          }
+        }
+        return commands.join(" ");
+      }
+
+      function renderAxisTicks(axis, span) {
+        axis.replaceChildren();
+        [0, 0.25, 0.5, 0.75, 1].forEach((fraction, index) => {
+          const tick = document.createElement("span");
+          tick.textContent = `${formatNumber(fraction * span, 3)} ft`;
+          tick.style.left = `${index * 25}%`;
+          axis.appendChild(tick);
+        });
+      }
+
+      function renderPlotGrid(parent, axis, span) {
+        parent.replaceChildren();
+        renderAxisTicks(axis, span);
+        const positions = [0, 0.25, 0.5, 0.75, 1].map(fraction => fraction * span);
+        makeSvgElement(parent, "line", {
+          x1: beamStart, y1: 30, x2: beamStart + beamWidth, y2: 30, class: "gridline"
+        });
+        makeSvgElement(parent, "line", {
+          x1: beamStart, y1: 142, x2: beamStart + beamWidth, y2: 142, class: "gridline"
+        });
+        positions.forEach(position => {
+          const x = beamX(position);
+          makeSvgElement(parent, "line", {
+            x1: x, y1: 24, x2: x, y2: 148, class: "gridline"
+          });
+        });
+      }
+
+      function renderPlotValueLabels(parent, maximum) {
+        parent.replaceChildren();
+        const values = [
+          { value: maximum, y: 34 },
+          { value: 0, y: 82 },
+          { value: -maximum, y: 139 }
+        ];
+        values.forEach(({ value, y }) => {
+          makeSvgElement(parent, "text", {
+            x: 114,
+            y,
+            "text-anchor": "end",
+            class: "axis-label"
+          }, formatSignedValue(value));
+        });
+      }
+
+      function renderShearAndMomentPlots(analysis) {
+        const shearMaximum = analysis.shearExtrema.maximum;
+        elements.shearFill.setAttribute("d", buildSignedArea(analysis.shearSamples, shearMaximum));
+        elements.shearCurve.setAttribute("d", buildPlotCurve(analysis.shearSamples, shearMaximum));
+        renderPlotGrid(elements.shearGrid, elements.shearAxis, analysis.span);
+        renderPlotValueLabels(elements.shearLabels, shearMaximum);
+        elements.shearStat.textContent = formatExtremaStat("shear", "kips", analysis.shearExtrema);
+        elements.shearSvg.setAttribute(
+          "aria-label",
+          `Calculated shear diagram for a ${formatNumber(analysis.span, 3)} ft ${analysis.support === "simple" ? "simply supported beam" : "cantilever"}; ${elements.shearStat.textContent}`
+        );
+
+        const momentMaximum = analysis.momentExtrema.maximum;
+        elements.momentFill.setAttribute("d", buildSignedArea(analysis.momentSamples, momentMaximum));
+        elements.momentCurve.setAttribute("d", buildPlotCurve(analysis.momentSamples, momentMaximum));
+        renderPlotGrid(elements.momentGrid, elements.momentAxis, analysis.span);
+        renderPlotValueLabels(elements.momentLabels, momentMaximum);
+        elements.momentStat.textContent = formatExtremaStat("moment", "kip-ft", analysis.momentExtrema);
+        elements.momentSvg.setAttribute(
+          "aria-label",
+          `Calculated bending moment diagram for a ${formatNumber(analysis.span, 3)} ft ${analysis.support === "simple" ? "simply supported beam" : "cantilever"}; ${elements.momentStat.textContent}`
+        );
+        renderAxisTicks(elements.deflectionAxis, analysis.span);
+        elements.deflectionStat.textContent =
+          "Original 20-ft, 1-kip/ft example: mock maximum +0.609 in at x = 10 ft. Not current-beam data; axis follows current span for alignment only.";
+        elements.deflectionSvg.setAttribute(
+          "aria-label",
+          `Static mock deflection from the original 20-ft, 1-kip/ft example, with +0.609 in at x = 10 ft. The axis follows the current ${formatNumber(analysis.span, 3)} ft span for alignment only; these values are not calculated for the current beam.`
+        );
+        elements.deflectionCrosshairNote.setAttribute(
+          "aria-label",
+          "Static mock V, M, and deflection values from the original 20-ft, 1-kip/ft example at x = 10 ft; not calculated for the current beam"
+        );
+      }
+
+      function setReactionLabel(element, symbol, subscriptValue, value, unit, suffix = "") {
+        element.replaceChildren(document.createTextNode(symbol));
+        const subscript = document.createElement("sub");
+        subscript.textContent = subscriptValue;
+        element.append(subscript, document.createTextNode(` = ${value} ${unit}${suffix}`));
+      }
+
+      function renderReactions(analysis) {
+        setReactionLabel(
+          elements.reactionLeft,
+          "R",
+          "A",
+          analysis.reactions.left.toFixed(2),
+          "kips"
+        );
+        if (analysis.support === "simple") {
+          setReactionLabel(
+            elements.reactionRight,
+            "R",
+            "B",
+            analysis.reactions.right.toFixed(2),
+            "kips"
+          );
+          elements.reactionCaption.textContent = "Calculated upward support reactions";
+          elements.reactionSummary.setAttribute("aria-label", "Calculated upward support reactions");
+        } else {
+          setReactionLabel(
+            elements.reactionRight,
+            "M",
+            "A",
+            formatSignedValue(analysis.reactions.fixedMoment),
+            "kip-ft",
+            " counterclockwise"
+          );
+          elements.reactionCaption.textContent = "Calculated fixed-end reactions; counterclockwise moment is positive";
+          elements.reactionSummary.setAttribute(
+            "aria-label",
+            "Calculated cantilever reactions; upward force and counterclockwise moment are positive"
+          );
+        }
+      }
+
       function getBeamLayout() {
         const validUniformCount = state.uniformLoads.filter(load => load.valid).length;
         const validPointCount = state.pointLoads.filter(load => load.valid).length;
@@ -1713,7 +2125,7 @@
           uniformStartY,
           pointLabelY,
           beamY,
-          viewHeight: beamY + 78
+          viewHeight: beamY + 120
         };
       }
 
@@ -1737,6 +2149,36 @@
           for (let y = beamY - 24; y <= beamY + 24; y += 8) {
             addSupportLine(beamStart - 16, y + 8, beamStart, y, "ground");
           }
+        }
+      }
+
+      function drawReactions(analysis, beamY) {
+        const drawForce = (position, value, label) => {
+          if (Math.abs(value) <= analysisEpsilon) return;
+          makeSvgElement(elements.beamElements, "line", {
+            x1: position,
+            y1: beamY + 62,
+            x2: position,
+            y2: beamY + 29,
+            class: "reaction-line",
+            "marker-end": "url(#reaction-arrow)",
+            "aria-label": `${label} reaction, ${value.toFixed(2)} kips upward`
+          });
+        };
+
+        drawForce(beamStart, analysis.reactions.left, "Left support");
+        if (analysis.support === "simple") {
+          drawForce(beamStart + beamWidth, analysis.reactions.right, "Right support");
+        } else if (Math.abs(analysis.reactions.fixedMoment) > analysisEpsilon) {
+          const centerX = beamStart + 74;
+          const centerY = beamY + 47;
+          makeSvgElement(elements.beamElements, "path", {
+            d: `M${centerX + 10} ${centerY + 7} A12 12 0 0 0 ${centerX + 10} ${centerY - 7}`,
+            class: "reaction-line",
+            fill: "none",
+            "marker-end": "url(#reaction-arrow)",
+            "aria-label": `Fixed-end reaction moment, ${formatSignedValue(analysis.reactions.fixedMoment)} kip-ft counterclockwise`
+          });
         }
       }
 
@@ -1878,6 +2320,7 @@
       }
 
       function renderBeam() {
+        const analysis = calculateBeamResponse();
         const layout = getBeamLayout();
         elements.beamSvg.setAttribute("viewBox", `0 0 900 ${layout.viewHeight}`);
         elements.beamElements.replaceChildren();
@@ -1885,9 +2328,10 @@
         drawPointLoads(layout);
         addSupportLine(beamStart, layout.beamY, beamStart + beamWidth, layout.beamY, "beam-line");
         drawSupports(layout.beamY);
+        drawReactions(analysis, layout.beamY);
 
         const middle = beamStart + beamWidth / 2;
-        const dimensionY = layout.beamY + 44;
+        const dimensionY = layout.beamY + 77;
         makeSvgElement(elements.beamElements, "line", {
           x1: beamStart,
           y1: dimensionY,
@@ -1898,26 +2342,28 @@
           "marker-end": "url(#dimension-arrow)"
         });
         for (const x of [beamStart, middle, beamStart + beamWidth]) {
-          addSupportLine(x, layout.beamY + 33, x, layout.beamY + 50, "dimension");
+          addSupportLine(x, layout.beamY + 66, x, layout.beamY + 83, "dimension");
         }
         makeSvgElement(elements.beamElements, "text", {
           x: beamStart,
-          y: layout.beamY + 67,
+          y: layout.beamY + 101,
           "text-anchor": "middle",
           class: "beam-label"
         }, "0 ft");
         makeSvgElement(elements.beamElements, "text", {
           x: middle,
-          y: layout.beamY + 67,
+          y: layout.beamY + 101,
           "text-anchor": "middle",
           class: "beam-label"
         }, `${formatNumber(state.span / 2, 3)} ft`);
         makeSvgElement(elements.beamElements, "text", {
           x: beamStart + beamWidth,
-          y: layout.beamY + 67,
+          y: layout.beamY + 101,
           "text-anchor": "middle",
           class: "beam-label"
         }, `${formatNumber(state.span, 3)} ft`);
+        renderReactions(analysis);
+        renderShearAndMomentPlots(analysis);
         updateBeamDescription();
       }
 
@@ -1939,7 +2385,7 @@
           ? `Simply supported beam, ${formatNumber(state.span, 3)} feet`
           : `Cantilever beam fixed at left, ${formatNumber(state.span, 3)} feet`;
         elements.beamDesc.textContent =
-          `Input preview of a ${supportDescription}. ${pointLabel} and ${uniformLabel} are shown. Engineering results are static mock values.`;
+          `Input preview of a ${supportDescription}. ${pointLabel} and ${uniformLabel} are shown. Support reactions, shear, and moment are calculated from valid loads; deflection and section checks remain mock values.`;
       }
 
       function createField(load, kind, fieldName, labelText, value, options = {}) {
